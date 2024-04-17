@@ -1,0 +1,7 @@
+adios4dolfinx==0.7.3
+fenics_dolfinx==0.6.0
+fenics_ufl==2023.1.1.post0
+mpi4py==3.1.4
+numpy==1.24.2
+pandas==1.5.3
+petsc4py==3.17.4

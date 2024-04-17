@@ -1,0 +1,17 @@
+# Byte-compiled / optimized / DLL files
+**/__pycache__
+*.pyc
+*.pyo
+*.pyd
+
+*.session
+sim_suite/tests
+
+output/*
+tests/
+solver_logs_petsc/
+
+.vscode/*
+
+# Only local helpers
+# private/*
