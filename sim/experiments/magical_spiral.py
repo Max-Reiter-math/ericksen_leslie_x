@@ -1,8 +1,3 @@
-#!/usr/bin/env python
-"""
-class for a standard benchmark setting for the ericksen-leslie model: 
-    annihilation of two defects without an initial flow 
-"""
 import os
 from argparse import Namespace
 from functools import partial
@@ -15,19 +10,17 @@ from sim.common.common_methods import set_attributes
 from sim.common.common_fem_methods import angle_between
 from sim.common.error_computation import *
 
-
+"""
+class for a standard benchmark setting for the ericksen-leslie model: 
+    annihilation of two defects without an initial flow 
+"""
 
 class spiral:
     def __init__(self, args = Namespace()):
-        
-
         self.name="magical spiral"
         # - model parameters namely v_el, const_A, nu, mu_1, mu_4, mu_5, mu_6, lam
         default_attributes = {"dim" : 2, "dh" : 10, "dt" : 0.001, "T" :  2, "t0": 0, "v_el": 1, "const_A":1.0, "nu":1.0,"mu_1":1.0, "mu_4": 1.0, "mu_5":1.0, "mu_6":1.0 , "lam":1.0, "algo2D": 6, "algo3D": 1}
         set_attributes(self, default_attributes, args)
-        
-
-
 
         #SECTION - READ MESH
         mesh_loc = "input/meshes/spiral_"+str(self.dim)+"D_dh_"+str(self.dh)
@@ -47,15 +40,6 @@ class spiral:
 
         else:
             raise FileNotFoundError("Could not find any mesh in msh or xdmf format under "+mesh_loc+"... To run this experiment the according mesh is needed as input.")
-        
-        # if not os.path.isfile(mesh_loc+".xdmf") and not os.path.isfile(mesh_loc+".msh"):
-        #     # mesh needs to be created first
-        #     try:
-        #         # mesh exists in msh format
-        #         from input.meshing import create_mesh
-        #         create_mesh(self.dim, self.dh, algo = (self.algo2D, self.algo3D), path = mesh_loc)
-        #     except ImportError:
-        #         raise ModuleNotFoundError("In order to use this experiment the package gmsh and python gmsh is required. To install both use: conda install -c conda-forge gmsh python-gmsh")
             
         inside, outside, up, down  =  self.meshtags.find(2) ,  self.meshtags.find(3) ,  self.meshtags.find(4),  self.meshtags.find(5)
         #!SECTION
@@ -126,8 +110,8 @@ class spiral:
         
         return err
 
-# CUSTOM FUNCTIONS
-# ---------------------------------------------------------------------------------
+#SECTION - CUSTOM FUNCTIONS
+
 def get_d0(x: np.ndarray, dim: int) -> np.ndarray:
     if dim not in [2,3]: raise ValueError("Dimension "+str(dim)+" not supported.")
     # x hase shape (dimension, points)
@@ -174,10 +158,10 @@ def unit_radials(x: np.ndarray, dim: int) -> np.ndarray:
     norms = np.linalg.norm(values, ord = 2, axis = 0) # compute euclidean norm
     values = values / norms # renormalize
     return values
-#----------------------------------------------------------------------------------
+#!SECTION
 
-# GEOMETRIC BOUNDARY DESCRIPTION
-# ---------------------------------------------------------------------------------    
+#SECTION - GEOMETRIC BOUNDARY DESCRIPTION
+
 def boundary_3d(x: np.ndarray) -> np.ndarray:
     return np.logical_or.reduce((bd_disks(x), bd_inside(x), bd_outside(x)))
 
@@ -192,3 +176,5 @@ def bd_outside(x):
 
 def bd_inside(x):
     return np.isclose(x[0]**2 + x[1]**2, 1, atol=.1)
+
+#!SECTION

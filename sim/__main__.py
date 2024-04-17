@@ -1,7 +1,3 @@
-#!/usr/bin/env python
-"""
-This will be run, when the command: python -m sim_suite is called in the top-level directory.
-"""
 import warnings
 from datetime import datetime
 import time
@@ -25,6 +21,13 @@ from sim.common.postprocess import PostProcess
 # Import of the numerical schemes and settings
 import sim.experiments as experiments
 import sim.models as models
+
+"""
+Main File
+Takes arguments via command line input. See all options via:
+    python -m sim -h
+"""
+
 
 def start_simulation_from_args(args: dict | Namespace, postprocess = None):  
     if type(args) == dict: args = Namespace(**args)

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from argparse import Namespace
 import numpy as np
-from time import process_time
+from time import process_time, ctime
 from mpi4py import MPI
 from petsc4py import PETSc
 from dolfinx.fem import Function, functionspace, form, assemble_scalar, dirichletbc, locate_dofs_topological, locate_dofs_geometrical
@@ -11,14 +11,9 @@ from sim.models.el_forms import *
 from sim.common.common_fem_methods import *
 from sim.common.common_methods import get_global_dofs
 
-#TODO - Time measurement
-
 #SECTION - GENERAL METHOD
 def decoupled_fp_solver(experiment, args, use_mass_lumping: bool = False, a_tol: float = 1E-5, r_tol: float = 1E-4, max_iters: int = 100, postprocess=None, solver_metadata = [{"ksp_type": "bcgs", "pc_type": "jacobi"}, {"ksp_type": "preonly", "pc_type": "lu", "pc_factor_mat_solver_type": "mumps"}, {"ksp_type": "preonly", "pc_type": "lu", "pc_factor_mat_solver_type": "mumps"}]):
-    # {"ksp_type": "bcgs", "pc_type": "gamg"}
-    # {"ksp_type": "bcgs", "pc_type": "jacobi"}
-    # {"ksp_type": "preonly", "pc_type": "lu", "pc_factor_mat_solver_type": "mumps"}
-    #  solver_metadata = [{"ksp_type": "preonly", "pc_type": "lu", "pc_factor_mat_solver_type": "mumps"},{"ksp_type": "preonly", "pc_type": "lu", "pc_factor_mat_solver_type": "mumps"}, {"ksp_type": "preonly", "pc_type": "lu", "pc_factor_mat_solver_type": "mumps"}]
+
     
     #SECTION - PARAMETERS
     dim         = experiment.dim
@@ -237,7 +232,6 @@ def decoupled_fp_solver(experiment, args, use_mass_lumping: bool = False, a_tol:
     E0 = E_elastic + E_kinetic
     dt0 = dt # necessary for time step control
 
-    last_time_measure = process_time()
 
     while t <= T:
         ### updating time
@@ -310,7 +304,8 @@ def decoupled_fp_solver(experiment, args, use_mass_lumping: bool = False, a_tol:
                         "unit norm err": test_unit_norm(d1),
                         "computation time": computation_time,
                         "fp iteration": fp_iter,
-                        "error": error}
+                        "error": error,
+                        "datetime": str(ctime())}
             postprocess.log("dict", t, metrics) 
             #!SECTION
 

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 from argparse import Namespace
 from functools import partial
 import numpy as np

@@ -1,8 +1,3 @@
-#!/usr/bin/env python
-"""
-class for a standard benchmark setting for the ericksen-leslie model: 
-    annihilation of two defects without an initial flow 
-"""
 from argparse import Namespace
 from functools import partial
 import numpy as np
@@ -12,6 +7,11 @@ from mpi4py import MPI
 from petsc4py.PETSc import ScalarType
 from sim.experiments.bcs_wo_fs import *
 from sim.common.common_methods import set_attributes
+
+"""
+class for a standard benchmark setting for the ericksen-leslie model: 
+    annihilation of two defects without an initial flow 
+"""
 
 class velocity_driven_flow:
     def __init__(self, args = Namespace()):

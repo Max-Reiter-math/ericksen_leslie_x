@@ -17,6 +17,12 @@ import sim.models as models
 
 from sim.__main__ import start_simulation_from_args
 
+"""
+used as a batch of simulations with varying parameters
+call by
+    python -m sim.sim_presets.projection-spiral
+"""
+
 def main():
     # simulate CLI Input
     parser = CLI.get_parser()
@@ -33,9 +39,7 @@ def main():
     args.fsr        = 0.05
     args.msr        = 0.05
 
-    args.T = 1* args.dt # for test purposes only
-
-    # Initializing Postprocess
+        # Initializing Postprocess
     
     #SECTION - EVTL. CONNECTION TO TELEGRAM
     # Check whether telebot has to be activated
@@ -70,6 +74,9 @@ def main():
             for dt in dt_list:
                 args.dh = dh
                 args.dt = dt
+
+                #NOTE - for test purposes only
+                # args.T = 1* args.dt 
 
                 args.sim_id = str(args.exp)+"_"+str(args.mod)+"_dh_"+str(args.dh)+"_dt_"+str(args.dt)
                 # print(args)

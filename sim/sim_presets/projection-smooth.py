@@ -1,7 +1,3 @@
-#!/usr/bin/env python
-"""
-This will be run, when the command: python -m sim_suite is called in the top-level directory.
-"""
 import warnings, sys
 from datetime import datetime
 import time
@@ -16,6 +12,12 @@ import sim.experiments as experiments
 import sim.models as models
 
 from sim.__main__ import start_simulation_from_args
+
+"""
+used as a batch of simulations with varying parameters
+call by
+    python -m sim.sim_presets.projection-smooth
+"""
 
 def main():
     # simulate CLI Input
@@ -32,8 +34,6 @@ def main():
     args.checkpoint = True
     args.fsr        = 0.05
     args.msr        = 0.05
-
-    args.T = 1* args.dt # for test purposes only
 
     # Initializing Postprocess
     
@@ -70,6 +70,9 @@ def main():
             for dt in dt_list:
                 args.dh = dh
                 args.dt = dt
+
+                #NOTE - for test purposes only
+                # args.T = 1.0 * args.dt 
 
                 args.sim_id = str(args.exp)+"_"+str(args.mod)+"_dh_"+str(args.dh)+"_dt_"+str(args.dt)
                 # print(args)

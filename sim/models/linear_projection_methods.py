@@ -1,4 +1,4 @@
-from time import process_time
+from time import process_time, ctime
 from dolfinx.fem import Function, functionspace, dirichletbc, form, assemble_scalar, dirichletbc, locate_dofs_topological, locate_dofs_geometrical, ElementMetaData, Expression
 from dolfinx.fem.petsc import LinearProblem, assemble_vector
 from ufl import div, dx, grad, inner, VectorElement, FiniteElement, MixedElement, TrialFunctions, TrialFunction, TestFunction, split, Measure, lhs, rhs, FacetNormal, sqrt, dP, sign, exp, as_ufl
@@ -8,15 +8,9 @@ from sim.common.error_computation import errornorm
 
 # dolfinx v0.7
 
-#TODO - Time measuremnt
-
 #SECTION - GENERAL METHOD
 def linear_method(experiment, args, projection: bool, use_mass_lumping: bool, postprocess=None, solver_metadata = [{"ksp_type": "preonly", "pc_type": "lu", "pc_factor_mat_solver_type": "mumps"}]):
-    # solver_metadata = {"ksp_type": "preonly", "pc_type": "lu", "pc_factor_mat_solver_type": "mumps"}
-    # solver_metadata = {"ksp_type": "preonly", "pc_type": "lu"}
-    # solver_metadata = {"ksp_type": "bcgs", "pc_type": "jacobi"}
-    # solver_metadata = {"ksp_type": "bcgs", "pc_type": "gamg"}
-    
+   
 
     # SECTION PARAMETERS
     ## import and initalize parameters
@@ -205,7 +199,8 @@ def linear_method(experiment, args, projection: bool, use_mass_lumping: bool, po
     #!SECTION
 
     # SECTION TIME EVOLUTION
-    # last_time_measure = process_time()
+    last_time_measure = process_time()
+
     while t < T:
         t += dt 
         
@@ -278,7 +273,8 @@ def linear_method(experiment, args, projection: bool, use_mass_lumping: bool, po
                     "nodal orthogonality (Linfty)": test_ptw_orthogonality(d_diff, d0_),
                     "computation time": computation_time,
                     "errorL2": errorL2,
-                    "errorinf": errorinf}
+                    "errorinf": errorinf,
+                    "datetime": str(ctime())}
         if projection:
             metrics_P = {"projection error (L2)": err_projection,
                     "Energy increase by projection": E_p_diff,}

@@ -13,5 +13,13 @@ solver_logs_petsc/
 
 .vscode/*
 
+
+
+# telegram bot
+tbot.json
+# local private
+NOTES.md
+cheatsheet.md
+
 # Only local helpers
 # private/*

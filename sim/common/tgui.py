@@ -1,21 +1,10 @@
-# import time, sys, os
-# import threading as threading
-
 from datetime import datetime
 import os, sys
 
-# TODO make it object-oriented + refreshing frequency
-# make little test if warnings can be logged 
-# otherwise stay with current methodology
-
-# Initialize the screen
-
-
-
-# Check if screen was re-sized (True or False)
-
-
 class terminal_screen:
+    """
+    Simple class for a minimalistic terminal screen, that still allows to use the print command for debugging etc.
+    """
     def __init__(self, refresh_frequency = 5):
         self.starting_time = datetime.now()
         self.last_refreshed = datetime.now()
