@@ -325,7 +325,7 @@ def LL2P(experiment, args, postprocess=None, solver_metadata = {"ksp_type": "pre
     linear_method(experiment, args, projection=True, use_mass_lumping=False, postprocess = postprocess, solver_metadata = solver_metadata)
 
 
-def LhP(experiment, args, postprocess=None, solver_metadata = {"ksp_type": "preonly", "pc_type": "lu"}):
+def LhP(experiment, args, postprocess=None, solver_metadata = {"ksp_type": "ibcgs", "pc_type": "lu"}):
     """
     linear solver without projection and with mass-lumping
     """
