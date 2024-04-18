@@ -9,7 +9,12 @@ from sim.common.error_computation import errornorm
 # dolfinx v0.7
 
 #SECTION - GENERAL METHOD
-def linear_method(experiment, args, projection: bool, use_mass_lumping: bool, postprocess=None, solver_metadata =  {"ksp_type": "preonly", "pc_type": "lu", "pc_factor_mat_solver_type": "mumps"}):
+def linear_method(experiment, args, projection: bool, use_mass_lumping: bool, postprocess=None, solver_metadata = {"ksp_type": "bcgs", "pc_type": "lu", "pc_factor_mat_solver_type": "mumps"}):
+    """
+    Good options for the petsc metadata are:
+        {"ksp_type": "preonly", "pc_type": "lu", "pc_factor_mat_solver_type": "mumps"}
+        {"ksp_type": "fbcgs", "pc_type": "lu", "pc_factor_mat_solver_type": "mumps"}
+    """
    
 
     # SECTION PARAMETERS
@@ -303,34 +308,34 @@ def linear_method(experiment, args, projection: bool, use_mass_lumping: bool, po
 
 
 # SECTION NUMERICAL SCHEME BINDINGS
-def LL2(experiment, args, postprocess=None, solver_metadata = {"ksp_type": "bcgs", "pc_type": "lu", "pc_factor_mat_solver_type": "mumps"}):
+def LL2(experiment, args, postprocess=None):
     """
     linear solver without projection and without mass-lumping
     """
     postprocess.log("dict", "static",{"model": "Linear scheme for the Ericksen-Leslie equations", "experiment":experiment.name})
-    linear_method(experiment, args, projection=False, use_mass_lumping=False, postprocess = postprocess, solver_metadata = solver_metadata)
+    linear_method(experiment, args, projection=False, use_mass_lumping=False, postprocess = postprocess)
 
-def Lh(experiment, args, postprocess=None, solver_metadata = {"ksp_type": "bcgs", "pc_type": "lu", "pc_factor_mat_solver_type": "mumps"}):
+def Lh(experiment, args, postprocess=None):
     """
     linear solver without projection and with mass-lumping
     """
     postprocess.log("dict", "static",{"model": "Linear scheme for the Ericksen-Leslie equations, mass-lumping", "experiment":experiment.name})
-    linear_method(experiment, args, projection=False, use_mass_lumping=True, postprocess = postprocess, solver_metadata = solver_metadata)
+    linear_method(experiment, args, projection=False, use_mass_lumping=True, postprocess = postprocess)
 
-def LL2P(experiment, args, postprocess=None, solver_metadata = {"ksp_type": "bcgs", "pc_type": "lu", "pc_factor_mat_solver_type": "mumps"}):
+def LL2P(experiment, args, postprocess=None ):
     """
     linear solver without projection and without mass-lumping
     """
     postprocess.log("dict", "static",{"model": "Linear scheme for the Ericksen-Leslie equations, with nodal projection", "experiment":experiment.name})
-    linear_method(experiment, args, projection=True, use_mass_lumping=False, postprocess = postprocess, solver_metadata = solver_metadata)
+    linear_method(experiment, args, projection=True, use_mass_lumping=False, postprocess = postprocess)
 
 
-def LhP(experiment, args, postprocess=None, solver_metadata = {"ksp_type": "bcgs", "pc_type": "lu", "pc_factor_mat_solver_type": "mumps"}):
+def LhP(experiment, args, postprocess=None):
     """
     linear solver without projection and with mass-lumping
     """
     postprocess.log("dict", "static",{"model": "Linear scheme for the Ericksen-Leslie equations, mass-lumping, with nodal projection", "experiment":experiment.name})
-    linear_method(experiment, args, projection=True, use_mass_lumping=True, postprocess = postprocess, solver_metadata = solver_metadata)
+    linear_method(experiment, args, projection=True, use_mass_lumping=True, postprocess = postprocess)
 
 #!SECTION BINDINGS
 
