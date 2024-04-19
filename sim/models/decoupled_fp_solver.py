@@ -12,7 +12,11 @@ from sim.common.common_fem_methods import *
 from sim.common.common_methods import get_global_dofs
 
 #SECTION - GENERAL METHOD
-def decoupled_fp_solver(experiment, args, use_mass_lumping: bool = False, a_tol: float = 1E-5, r_tol: float = 1E-4, max_iters: int = 100, postprocess=None, solver_metadata = [{"ksp_type": "bcgs", "pc_type": "jacobi"}, {"ksp_type": "preonly", "pc_type": "lu", "pc_factor_mat_solver_type": "mumps"}, {"ksp_type": "preonly", "pc_type": "lu", "pc_factor_mat_solver_type": "mumps"}]):
+def decoupled_fp_solver(experiment, args, use_mass_lumping: bool = False, a_tol: float = 1E-5, r_tol: float = 1E-4, max_iters: int = 100, postprocess=None, solver_metadata = [{"ksp_type": "gmres", "pc_type": "lu", "pc_factor_mat_solver_type": "mumps"}, {"ksp_type": "preonly", "pc_type": "lu", "pc_factor_mat_solver_type": "mumps"}, {"ksp_type": "preonly", "pc_type": "lu", "pc_factor_mat_solver_type": "mumps"}]):
+    """
+        {"ksp_type": "bcgs", "pc_type": "jacobi"}
+        {"ksp_type": "gmres", "pc_type": "lu", "pc_factor_mat_solver_type": "mumps"}
+    """
 
     
     #SECTION - PARAMETERS
