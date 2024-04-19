@@ -10,7 +10,7 @@ $$
 \\
 \nabla \cdot  v = 0,
 \\
-d \times \left (\partial_t  d + ( v \cdot \nabla)  d - (\nabla  v)_{skw}  d +  \lambda (\nabla  v)_{sym}  d - \Delta  d \right ) =0,
+d \times \left (\partial_t  d + ( v \cdot \nabla)  d - {(\nabla  v)}_{skw}  d +  \lambda {(\nabla  v)}_{sym}  d - \Delta  d \right ) =0,
 \\
 \vert d \vert^2 = 1.
 \end{aligned}
@@ -26,7 +26,7 @@ $$
 \\
 \nabla \cdot  v = 0,
 \\
-\partial_t  d + \left ( I -  d \otimes  d \right ) [ ( v \cdot \nabla)  d - (\nabla  v)_{skw}  d + \left ( \lambda (\nabla  v)_{sym}  d - \Delta  d \right ) ] =0,
+\partial_t  d + \left ( I -  d \otimes  d \right ) [ ( v \cdot \nabla)  d - {(\nabla  v)}_{skw}  d + \left ( \lambda {(\nabla  v)}_{sym}  d - \Delta  d \right ) ] =0,
 \\
 \vert d \vert^2 = 1.
 \end{aligned}
