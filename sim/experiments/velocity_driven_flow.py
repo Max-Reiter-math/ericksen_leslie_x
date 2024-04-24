@@ -17,7 +17,7 @@ class velocity_driven_flow:
     def __init__(self, args = Namespace()):
         self.name="velocity driven flow of two defects"
         # - model parameters namely v_el, const_A, nu, mu_1, mu_4, mu_5, mu_6, lam
-        default_attributes = {"dim" : 3, "dh" : 2**3, "dt" : 0.0005, "T" : 0.5, "t0": 0, "v_el":1.0, "const_A":0.1, "nu":1.0,"mu_1":1.0, "mu_4": 1.0, "mu_5":1.0, "mu_6":1.0 , "lam":1.0}
+        default_attributes = {"dim" : 3, "dh" : 2**4, "dt" : 0.0005, "T" : 2.0, "t0": 0, "v_el":1.0, "const_A":0.1, "nu":1.0,"mu_1":1.0, "mu_4": 1.0, "mu_5":1.0, "mu_6":1.0 , "lam":1.0}
         set_attributes(self, default_attributes, args)
 
         if self.dim == 3:
