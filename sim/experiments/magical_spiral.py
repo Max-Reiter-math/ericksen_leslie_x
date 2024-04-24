@@ -19,7 +19,7 @@ class spiral:
     def __init__(self, args = Namespace()):
         self.name="magical spiral"
         # - model parameters namely v_el, const_A, nu, mu_1, mu_4, mu_5, mu_6, lam
-        default_attributes = {"dim" : 2, "dh" : 10, "dt" : 0.001, "T" :  2, "t0": 0, "v_el": 1, "const_A":1.0, "nu":1.0,"mu_1":1.0, "mu_4": 1.0, "mu_5":1.0, "mu_6":1.0 , "lam":1.0, "algo2D": 6, "algo3D": 1}
+        default_attributes = {"dim" : 2, "dh" : 10, "dt" : 0.001, "T" :  1.5, "t0": 0, "v_el": 1, "const_A":1.0, "nu":1.0,"mu_1":1.0, "mu_4": 1.0, "mu_5":1.0, "mu_6":1.0 , "lam":1.0, "algo2D": 6, "algo3D": 1}
         set_attributes(self, default_attributes, args)
 
         #SECTION - READ MESH
