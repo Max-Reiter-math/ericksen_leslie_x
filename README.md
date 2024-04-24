@@ -10,7 +10,7 @@ $$
 \\
 \nabla \cdot  v = 0,
 \\
-d \times \left (\partial_t  d + ( v \cdot \nabla)  d - {(\nabla  v)}_{skw}  d +  \lambda {(\nabla  v)}_{sym}  d - \Delta  d \right ) =0,
+d \times   (\partial_t  d + ( v \cdot \nabla)  d - {(\nabla  v)}_{skw}  d +  \lambda {(\nabla  v)}_{sym}  d - \Delta  d   ) =0,
 \\
 \vert d \vert^2 = 1.
 \end{aligned}
@@ -22,11 +22,11 @@ Depending on the choice of complexity for the different stress tensors, we consi
 
 $$
 \begin{aligned}
-\partial_t  v + ( v \cdot \nabla)  v  + \nabla  p +  \nabla \cdot [\nabla  d]^T \left ( I -  d \otimes  d \right ) \Delta d    - \nabla \cdot  T^L = 0,
+\partial_t  v + ( v \cdot \nabla)  v  + \nabla  p +  \nabla \cdot [\nabla  d]^T   ( I -  d \otimes  d   ) \Delta d    - \nabla \cdot  T^L = 0,
 \\
 \nabla \cdot  v = 0,
 \\
-\partial_t  d + \left ( I -  d \otimes  d \right ) [ ( v \cdot \nabla)  d - {(\nabla  v)}_{skw}  d + \left ( \lambda {(\nabla  v)}_{sym}  d - \Delta  d \right ) ] =0,
+\partial_t  d +   ( I -  d \otimes  d   ) [ ( v \cdot \nabla)  d - {(\nabla  v)}_{skw}  d +   ( \lambda {(\nabla  v)}_{sym}  d - \Delta  d   ) ] =0,
 \\
 \vert d \vert^2 = 1.
 \end{aligned}
@@ -36,11 +36,11 @@ $$
 
 $$
 \begin{aligned}
-\partial_t  v + ( v \cdot \nabla)  v  + \nabla  p  + \nabla \cdot [\nabla  d]^T \left ( I -  d \otimes  d \right ) \Delta d  - \nu \Delta v = 0,
+\partial_t  v + ( v \cdot \nabla)  v  + \nabla  p  + \nabla \cdot [\nabla  d]^T   ( I -  d \otimes  d   ) \Delta d  - \nu \Delta v = 0,
 \\
 \nabla \cdot  v = 0,
 \\
-\partial_t  d + \left ( I -  d \otimes  d \right ) [ ( v \cdot \nabla)  d - \Delta  d   ] =0,
+\partial_t  d +   ( I -  d \otimes  d   ) [ ( v \cdot \nabla)  d - \Delta  d   ] =0,
 \\
 \vert d \vert^2 = 1.
 \end{aligned}
@@ -117,7 +117,7 @@ Lasarzik, R., Reiter, M.E.V. Analysis and Numerical Approximation of Energy-Vari
 
 ## Authors
 
-* **Maximilian E. V. Reiter**
+* **Maximilian E. V. Reiter**, https://orcid.org/0000-0001-9137-7978
 
 ## License
 
