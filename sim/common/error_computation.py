@@ -26,17 +26,14 @@ def errornorm(uh: Function, u_ex: Function, norm: str = "L2", degree_raise: int 
         FS = uh.function_space
     
     # Create higher order function space
-    dim = FS.num_sub_spaces
+    # dim = FS.num_sub_spaces # deprecated
     degree = FS.ufl_element().degree()
     family = FS.ufl_element().family()
+    shape = FS.ufl_element().reference_value_shape()
     mesh = FS.mesh
     
     if degree_raise > 0:   
-        W = functionspace(mesh, ElementMetaData(family, degree+ degree_raise, shape = (dim,))) #v0.7     
-        # if dim >1:
-        #     # W = VectorFunctionSpace(mesh, (family, degree+ degree_raise), dim = dim) # v0.6
-        # else: 
-        #     W = functionspace(mesh, (family, degree+ degree_raise))
+        W = functionspace(mesh, ElementMetaData(family, degree+ degree_raise, shape = shape)) #v0.7    
     else:
         W = FS
     # W is the Function space in which the error will be computed

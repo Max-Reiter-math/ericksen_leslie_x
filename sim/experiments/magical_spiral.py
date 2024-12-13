@@ -5,7 +5,7 @@ import numpy as np
 
 from mpi4py import MPI
 from dolfinx.io import XDMFFile
-from sim.experiments.bcs_wo_fs import *
+from sim.common.meta_bcs import *
 from sim.common.common_methods import set_attributes
 from sim.common.common_fem_methods import angle_between
 from sim.common.error_computation import *
@@ -17,12 +17,13 @@ class for a standard benchmark setting for the ericksen-leslie model:
 
 class spiral:
     def __init__(self, args = Namespace()):
+        # NAME
         self.name="magical spiral"
-        # - model parameters namely v_el, const_A, nu, mu_1, mu_4, mu_5, mu_6, lam
+        # PARAMETERS v_el, const_A, nu, mu_1, mu_4, mu_5, mu_6, lam
         default_attributes = {"dim" : 2, "dh" : 10, "dt" : 0.001, "T" :  1.5, "t0": 0, "v_el": 1, "const_A":1.0, "nu":1.0,"mu_1":1.0, "mu_4": 1.0, "mu_5":1.0, "mu_6":1.0 , "lam":1.0, "algo2D": 6, "algo3D": 1}
         set_attributes(self, default_attributes, args)
 
-        #SECTION - READ MESH
+        # SECTION - MESH AND MESHTAGS
         mesh_loc = "input/meshes/spiral_"+str(self.dim)+"D_dh_"+str(self.dh)
         
         if os.path.isfile(mesh_loc+".xdmf"):
@@ -42,22 +43,30 @@ class spiral:
             raise FileNotFoundError("Could not find any mesh in msh or xdmf format under "+mesh_loc+"... To run this experiment the according mesh is needed as input.")
             
         inside, outside, up, down  =  self.meshtags.find(2) ,  self.meshtags.find(3) ,  self.meshtags.find(4),  self.meshtags.find(5)
+
+        if self.dim == 2: 
+            self.boundary = boundary_2d
+        elif self.dim == 3: 
+            self.boundary = boundary_3d
         #!SECTION
 
-        if self.dim == 2: self.boundary = boundary_2d
-        elif self.dim == 3: self.boundary = boundary_3d
+
+        # INIT FUNCTIONS WRT DIMENSION
         d0 = partial(get_d0, dim = self.dim)
+        dbc = partial(get_d_bc, dim = self.dim)
         v0 = partial(get_no_slip, dim = self.dim)
-         # - initial conditions
+
+        # INITIAL CONDITIONS
         self.initial_conditions = {"v": v0, "p": (lambda x: np.full((x.shape[1],), 0.0)), "d": d0}
-        # boundary conditions
-        # dirichlet_bc_wo_fs("d", "topological", d0, entities = inside), \
-        self.boundary_conditions = [dirichlet_bc_wo_fs("d", "topological", d0, entities = outside), \
-                                    dirichlet_bc_wo_fs("d", "topological", d0, entities = inside), \
-                                    dirichlet_bc_wo_fs("v", "topological", v0, entities= outside), \
-                                    dirichlet_bc_wo_fs("v", "topological", v0, entities= inside)] #, \
-                                    # component_dirichlet_bc_wo_fs("d", 2, "topological", partial(get_no_slip, dim = 1),  entities = up), \
-                                    # component_dirichlet_bc_wo_fs("d", 2, "topological", partial(get_no_slip, dim = 1),  entities = down)]
+
+        # BOUNDARY CONDITIONS
+        self.boundary_conditions = [meta_dirichletbc("d", "topological", dbc, entities = outside, meshtag=3), \
+                                    meta_dirichletbc("d", "topological", dbc, entities = inside, meshtag=2), \
+                                    meta_dirichletbc("v", "topological", v0, entities= outside, meshtag=3), \
+                                    meta_dirichletbc("v", "topological", v0, entities= inside, meshtag=2)]
+        if self.dim ==3:
+            self.boundary_conditions += [ meta_componentdirichletbc("d", "topological", partial(get_no_slip, dim = 1),  entities = up, component = 2), \
+                                         meta_componentdirichletbc("d", "topological", partial(get_no_slip, dim = 1),  entities = down, component = 2) ]
     
     @property
     def info(self):
@@ -82,8 +91,7 @@ class spiral:
         # mesh   = uh_.function_space.mesh
         degree = uh_.function_space.ufl_element().degree()
         family = uh_.function_space.ufl_element().family()
-        # degree = 1
-        # family = "Lagrange"
+ 
         Q = FunctionSpace(self.mesh, (family, degree))
         Qr = FunctionSpace(self.mesh, (family, degree+degree_raise))
         D = VectorFunctionSpace(self.mesh, (family, degree), self.dim)
@@ -100,13 +108,8 @@ class spiral:
 
         phir = Function(Qr)
         phir.interpolate(phi)
-        uex = Function(Qr)
-        uex.interpolate(self.exact_sol)
 
-
-        err = np.sqrt(assemble_scalar(form(inner(phir-uex, phir-uex)*dx)))
-        errinf = np.max(np.abs(uex.x.array[:] - phir.x.array[:] ))
-        # err = errornorm(phi, self.exact_sol, norm = norm, degree_raise = degree_raise)
+        err = errornorm(phi, self.exact_sol, norm = norm, degree_raise = degree_raise)
         
         return err
 
@@ -136,6 +139,29 @@ def get_d0(x: np.ndarray, dim: int) -> np.ndarray:
     norms = np.linalg.norm(values, ord = 2, axis = 0) # compute euclidean norm
     values = values / norms # renormalize
     return values
+
+def get_d_bc(x: np.ndarray, dim: int) -> np.ndarray:
+        if dim not in [2,3]: raise ValueError("Dimension "+str(dim)+" not supported.")
+        # x hase shape (dimension, points)
+
+        values = np.zeros((dim, x.shape[1])) # values is going to be the output  
+
+        # Setting 
+        # - normal to the boundary with some tilt described by eta
+        r = (x[0]**2 + x[1]**2)**(1/2)
+        inner_half = r < 1.5
+        outer_half = r >= 1.5
+        values[0][outer_half]= x[1][outer_half] 
+        values[1][outer_half]= -x[0][outer_half]
+        values[0][inner_half]= x[0][inner_half]
+        values[1][inner_half]= x[1][inner_half]
+        if dim == 3: values[2]=0.0
+
+        # renormalization
+        norms = np.linalg.norm(values, ord = 2, axis = 0) # compute euclidean norm
+        values = values / norms # renormalize
+        return values
+
 
 def get_no_slip(x: np.ndarray, dim: int) -> np.ndarray:
     # x hase shape (dimension, points)

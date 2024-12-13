@@ -15,12 +15,13 @@ def get_parser():
     # Model and experiment arguments
     megroup = parser.add_argument_group("Model and experiment settings")
     megroup.add_argument('-m','--mod', type=str, metavar='', help='THIS ARGUMENT IS REQUIRED: The model considered in the simulation. Options are ' + ", ".join(model_lib)) 
-    megroup.add_argument('-s','--submod', type=int, metavar='', nargs='?', const=2, default=2, help='The ericksen-leslie model considered in the simulation. Choices are 1-3. Default is 2')
+    megroup.add_argument('-s','--submod', type=int, metavar='', nargs='?', const=1, default=1, help='The ericksen-leslie model considered in the simulation. The choices depend on the model. Default is 1.')
     megroup.add_argument('-e','--exp', type=str, metavar='', help='THIS ARGUMENT IS REQUIRED: The experiment considered in the simulation. Options are '+ ", ".join(exp_lib))
     megroup.add_argument('-d','--dim', type=int, metavar='', help='Configures the dimension of the experiment, if dim is supported by the chosen experiment')
     megroup.add_argument('-dt','--dt', type=float, metavar='', help='Specifies resolution of time partition. Default is given by the experiment.')
     megroup.add_argument('-dh','--dh', type=int, metavar='', help='Specifies resolution of space partition. Default is given by the experiment.')
     megroup.add_argument('-T','--T', type=float, metavar='', help='Specifies resolution of time partition. Default is given by the experiment.')
+    megroup.add_argument('-a','--alpha', type=float, metavar='', nargs='?', const=0.1, default=0.1, help='Specifies the regularization parameter. This is alpha for the dg Method or e.g. epsilon for penalizaton method. Default is given by 0.1.')
 
     
     

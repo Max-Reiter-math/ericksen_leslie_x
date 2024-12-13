@@ -46,7 +46,7 @@ def decoupled_fp_solver(experiment, args, use_mass_lumping: bool = False, a_tol:
     postprocess.log("dict","static",{"model.vars":dict(locals())}, visible =False)
 
     mesh        = experiment.mesh
-    meshtags   = experiment.meshtags
+    meshtags    = experiment.meshtags
 
     initial_conditions          = experiment.initial_conditions
     boundary_conditions         = experiment.boundary_conditions
@@ -103,30 +103,57 @@ def decoupled_fp_solver(experiment, args, use_mass_lumping: bool = False, a_tol:
     dml = Measure("dx", domain = mesh, metadata = {"quadrature_rule": "vertex", "quadrature_degree": 0}) # needed for error computatoin
     if use_mass_lumping:
         dxL = dml
+        grad_d0 = grad_d0_project
     else:
         dxL = dx
+        grad_d0 = grad(d0)
 
-    # Define Energies    
+    # SECTION DEFINITION OF ENERGY
     Energy_kinetic = 0.5*inner(v1, v1) *dx  
-    Energy_elastic = 0.5*const_A*inner( grad(0.5* ( d1 + d0)), grad(0.5* ( d1 + d0)))*dx 
-    Energy_total = Energy_kinetic + Energy_elastic
+    Energy_elastic = 0.5*inner( grad(0.5* ( d1 + d0)), grad(0.5* ( d1 + d0) ))*dx 
+    Energy_total = Energy_kinetic + const_A*Energy_elastic
+    #!SECTION
+
+    # SECTION EQUATION SYSTEM DEFINITION
   
-    # Momentum equation
     def momentum_eq(vl1,  pl1,  dl0_, ql0, a):
+        # discrete time derivative
         eq =  inner( vl1 - v0  , a )*dx 
-        eq += dt*Convection_Velocity_Temam( vl1, v0, a) *dx 
+
+        # convection term
+        eq += dt* ( inner(dot(v0, nabla_grad(vl1)), a) + 0.5*div(v0)*inner(vl1, a)  )*dx 
+
+        # pressure term and divergence zero condition
         eq += - dt*inner(pl1,div(a))*dx + dt*div(vl1)*h*dx 
-        if use_mass_lumping:
-            eq += - dt*v_el* T_E(dl0_, dl0_, grad_d0_project, ql0, a, dim, submodel = submodel)*dxL
+
+        # diffusion term or dissipative terms
+        if submodel == 2:
+            eq += dt * mu_4*inner( grad_sym(vl1), grad_sym(a))*dx
+            eq += dt * v_el*(mu_1+lam**2)*inner(d0,dot(grad_sym(vl1),d0))*inner(d0,dot(grad_sym(a),d0))*dx
+            eq += dt * v_el* (mu_5+mu_6-lam**2)*inner( dot(grad_sym(vl1),d0), dot(grad_sym(a),d0))*dx
         else:
-            eq += - dt*v_el* T_E(dl0_, dl0_, grad(d0), ql0, a, dim, submodel = submodel)*dx
-        eq += dt*T_D(mu_1, mu_4, mu_5, mu_6, lam, v_el, d0,  vl1, a, dim, submodel = submodel)*dx 
-        TL = T_L( lam, dl0_, dl0_, dl0_, ql0, a, dim, submodel = submodel)
-        if TL != None: 
-            eq += dt*TL*dxL    
+            # standard diffusion case
+            eq += dt* mu_4 *inner( grad(vl1), grad(a))*dx
+
+        # Ericksen stress tensor terms
+        if dim ==3:
+            eq += -dt*const_A*v_el*inner( cross(dl0_, dot(grad_d0 , a)),  cross(dl0_, ql0))*dxL
+        else:
+            eq += -dt*const_A*v_el*inner( dot( I_dd(dl0_, dl0_, dim) , dot(grad_d0 , a)),  ql0)*dxL
+
+        # Leslie stress tensor terms
+        if submodel == 2:
+            if dim ==3:
+                eq +=  -dt*lam*inner(cross( dl0_ , ql0), cross(dl0_, dot(grad_sym(a), dl0_) ) )*dxL
+                eq += dt*inner(cross( dl0_ ,dot(grad_skw(a),dl0_)), cross(dl0_, ql0))*dx
+            else:
+                eq +=  -dt*lam*inner(dot( I_dd(dl0_,dl0_, dim) , ql0), dot(grad_sym(a), dl0_))*dxL
+                eq += dt*inner(dot( I_dd(dl0_,dl0_, dim) ,dot(grad_skw(a),ql0)), dl0_)*dxL
+        
         return eq
+    
     Eq1 = momentum_eq(vl1, pl1, dl0_, ql0, a)
-    ### consistent form of momentum equation
+    ### implicit form of momentum equation
     cEq1 = momentum_eq(vl, pl,  dl_, ql, a)
 
     ## compatibility condition / equation for the variational derivative
@@ -134,20 +161,36 @@ def decoupled_fp_solver(experiment, args, use_mass_lumping: bool = False, a_tol:
         return const_A*inner( grad(d), grad(b))*dx - inner(q,b)*dxL
         
     Eq2 = discr_energy_eq(dl0_, ql1, b)  
-    #+ eps*inner(dl0_,n)*inner(b,n)*ds #- inner(b, dot( outer(n,n), dot(grad(dl0_), n)))* ds\
+    # implicit formulation
     cEq2 = discr_energy_eq( dl_, ql, b) 
     
 
     ## director equation
     def director_eq( dl1, dl1_, dl0_,  ql0, vl0, c):
+        # discrete time derivative
         eq = inner(dl1 - d0, c)*dxL
-        if use_mass_lumping:
-            eq += dt*v_el*T_E(dl0_, dl1_, grad_d0_project, c, vl0, dim, submodel = submodel)*dxL
+
+        # dissipative terms
+        if dim == 3: 
+            eq += dt*const_A*inner( cross(dl0_, ql0), cross(dl1_, c))*dxL
+        else: 
+            eq += dt*const_A*inner(ql0 , dot( I_dd(dl0_,dl1_, dim) , c) )*dxL
+
+        # Ericksen stress tensor terms
+        if dim ==3:
+            eq += dt*v_el*inner( cross(dl0_, dot(grad_d0 , vl0)),  cross(dl1_, c))*dxL
         else:
-            eq += dt*v_el*T_E(dl0_, dl1_, grad(d0), c, vl0, dim, submodel = submodel)*dx
-        eq += dt*D_D(dl0_, dl1_,ql0, c, dim, submodel = submodel)*dxL 
-        TL = T_L( lam, dl0_, dl1_, dl0_, c, vl0, dim, submodel = submodel)
-        if TL != None: eq += - dt*TL*dxL    
+            eq += dt*v_el*inner( dot( I_dd(dl1_, dl0_, dim) , dot(grad_d0 , vl0)),  c)*dxL
+   
+        # Leslie stress tensor terms
+        if submodel == 2:
+            if dim ==3:
+                eq +=  dt*lam*inner(cross( dl1_ , c), cross(dl0_, dot(grad_sym(vl0), dl0_) ) )*dxL
+                eq += - dt*inner(cross( dl0_ ,dot(grad_skw(vl0),dl0_)), cross(dl1_, c))*dxL
+            else:
+                eq +=  dt*lam*inner(dot( I_dd(dl0_,dl1_, dim) , c), dot(grad_sym(vl0), dl0_))*dxL
+                eq += - dt*inner(dot( I_dd(dl1_,dl0_, dim) ,dot(grad_skw(vl0),dl0_)), c)*dxL
+
         return eq
     Eq3 = director_eq( dl1, dl1_, dl0_,  ql0, vl0, c)
     cEq3 = director_eq( dl, dl_, dl_, ql, vl, c)
@@ -178,6 +221,14 @@ def decoupled_fp_solver(experiment, args, use_mass_lumping: bool = False, a_tol:
     q1.x.array[:] = q0.x.array[:]    
     u1.x.array[:] = u0.x.array[:]
     d1.x.array[:] = d0.x.array[:]
+    #
+    ql.x.array[:] = q0.x.array[:]    
+    ul.x.array[:] = u0.x.array[:]
+    dl.x.array[:] = d0.x.array[:]
+    #
+    ql0.x.array[:] = q0.x.array[:]    
+    ul0.x.array[:] = u0.x.array[:]
+    dl0.x.array[:] = d0.x.array[:]
     #!SECTION
 
     #SECTION - BOUNDARY CONDITIONS
@@ -196,11 +247,11 @@ def decoupled_fp_solver(experiment, args, use_mass_lumping: bool = False, a_tol:
                 q_bc = Function(Y)
                 q_bc.interpolate(q0)
                 bcs_q = [dirichletbc(q_bc, locate_dofs_geometrical(Y, experiment.boundary))]
-        elif bcwofs.type == "Neumann":
-            if bcwofs.quantity == "v":
-                Eq1 += bcwofs.set_fs(V,a)
-            elif bcwofs.quantity == "d":
-                Eq2 += bcwofs.set_fs(Y,b)
+        # elif bcwofs.type == "Neumann":
+        #     if bcwofs.quantity == "v":
+        #         Eq1 += bcwofs.set_fs(V,a)
+        #     elif bcwofs.quantity == "d":
+        #         Eq2 += bcwofs.set_fs(Y,b)
         # elif bcwofs.type == "Robin":
         else: postprocess.log("dict", "static",{"Warning" : "Boundary conditions of type "+bcwofs.type+" are currently not implemented and will be ignored..."} )
 
@@ -213,9 +264,7 @@ def decoupled_fp_solver(experiment, args, use_mass_lumping: bool = False, a_tol:
     problem3 = LinearProblem(A3, L3,  bcs=bcs_d, u=dl, petsc_options=solver_metadata[2])
     #!SECTION
      
-    
-    
-    
+        
 
     computation_time += process_time() - last_time_measure
 
@@ -228,7 +277,7 @@ def decoupled_fp_solver(experiment, args, use_mass_lumping: bool = False, a_tol:
     metrics =       {"time": t,
                      "Energies (elastic)": E_elastic,
                     "Energies (kinetic)": E_kinetic,
-                    "Energies (total)": E_elastic+E_kinetic}
+                    "Energies (total)": E_elastic + const_A*E_kinetic}
     postprocess.log("dict", t, metrics)
     #!SECTION
     
@@ -303,7 +352,7 @@ def decoupled_fp_solver(experiment, args, use_mass_lumping: bool = False, a_tol:
                         "H1(dl0)": val_d,
                         "Energies (elastic)": E_elastic,
                         "Energies (kinetic)": E_kinetic,
-                        "Energies (total)": E_elastic+E_kinetic,
+                        "Energies (total)": E_elastic + const_A*E_kinetic,
                         "consistency err": consistency_err,
                         "unit norm err": test_unit_norm(d1),
                         "computation time": computation_time,
