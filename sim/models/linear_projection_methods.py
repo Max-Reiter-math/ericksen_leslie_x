@@ -11,7 +11,7 @@ from sim.common.error_computation import errornorm
 # dolfinx v0.7
 
 #SECTION - GENERAL METHOD
-def linear_method(experiment, args, projection: bool, use_mass_lumping: bool, postprocess=None, solver_metadata = {"ksp_type": "preonly", "pc_type": "lu", "pc_factor_mat_solver_type": "mumps"}):
+def linear_method(experiment, args, projection: bool, use_mass_lumping: bool, postprocess=None, solver_metadata = {"ksp_type": "gmres", "pc_type": "lu", "pc_factor_mat_solver_type": "mumps"}):
     """
     Good options for the petsc metadata are:
         {"ksp_type": "preonly", "pc_type": "lu", "pc_factor_mat_solver_type": "mumps"}  --> works mostly, very fast
