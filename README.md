@@ -50,14 +50,17 @@ $$
 ## Numerical Methods
 
 Currently the following numerical schemes are available.
-- linear scheme fulfilling a discrete energy law
+- linear Continuous Galerkin (CG) scheme fulfilling a discrete energy law
     - with mass-lumping
         - with a projection step (LhP)
         - without projection step (Lh)
     - with the standard $L^2$ inner product
         - with a projection step (LL2P)
         - without projection step (LL2)
-- a linearized, decoupled fixed point solver to approximate a fully implicit scheme (FPhD)
+- linear Discontinuous Galerkin (DG) scheme fulfilling a discrete energy law
+    - with a projection step (lpdg)
+    - without projection step (ldg)
+- a linearized, decoupled fixed point solver to approximate a fully implicit Continuous Galerkin (CG) scheme (FPhD)
     - with mass-lumping, --> fulfills the unit-norm constraint exactly at every node of the mesh
 
 All of the above methods use P2-P1-Taylor-Hood Finite Elements for velocity and space and CG1 elements for the director field and its discrete Laplacian.
