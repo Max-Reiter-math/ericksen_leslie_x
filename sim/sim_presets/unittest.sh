@@ -31,8 +31,8 @@ python -m sim -m "FPhD" -e smooth -vtx -dh 8 -d 2 -dt 0.0001 -T 0.0003 -sid "uni
 python -m sim -m "FPL2D" -e smooth -vtx -dh 8 -d 2 -dt 0.0001 -T 0.0003 -sid "unittest-FPL2D-smooth"
 # ANNIHILATION 
 # DG METHODS 
-python -m sim -m "lpdg" -e annihilation_2 -vtx -dh 8 -d 3 -dt 0.001 -T 0.003 -a 0.1 -sid "unittest-lpdg-annihilation_2"
-python -m sim -m "ldg" -e annihilation_2 -vtx -dh 8 -d 3 -dt 0.001 -T 0.003 -a 0.1 -sid "unittest-ldg-annihilation_2"
+python -m sim -m "lpdg" -e annihilation_2_dg -vtx -dh 8 -d 3 -dt 0.001 -T 0.003 -a 0.1 -sid "unittest-lpdg-annihilation_2_dg"
+python -m sim -m "ldg" -e annihilation_2_dg -vtx -dh 8 -d 3 -dt 0.001 -T 0.003 -a 0.1 -sid "unittest-ldg-annihilation_2_dg"
 # CG Methods
 python -m sim -m "LhP" -e annihilation_2 -vtx -dh 8 -d 3 -dt 0.001 -T 0.003 -sid "unittest-LhP-annihilation_2"
 python -m sim -m "Lh" -e annihilation_2 -vtx -dh 8 -d 3 -dt 0.001 -T 0.003 -sid "unittest-Lh-annihilation_2"
@@ -43,8 +43,8 @@ python -m sim -m "FPhD" -e annihilation_2 -vtx -dh 8 -d 3 -dt 0.0001 -T 0.0003 -
 python -m sim -m "FPL2D" -e annihilation_2 -vtx -dh 8 -d 3 -dt 0.0001 -T 0.0003 -sid "unittest-FPL2D-annihilation_2"
 # VELOCITY DRIVEN FLOW 
 # DG METHODS 
-python -m sim -m "lpdg" -e velocity_driven_flow -vtx -dh 8 -d 3 -dt 0.001 -T 0.003 -a 0.1 -sid "unittest-lpdg-velocity_driven_flow"
-python -m sim -m "ldg" -e velocity_driven_flow -vtx -dh 8 -d 3 -dt 0.001 -T 0.003 -a 0.1 -sid "unittest-ldg-velocity_driven_flow"
+python -m sim -m "lpdg" -e velocity_driven_flow_dg -vtx -dh 8 -d 3 -dt 0.001 -T 0.003 -a 0.1 -sid "unittest-lpdg-velocity_driven_flow_dg"
+python -m sim -m "ldg" -e velocity_driven_flow_dg -vtx -dh 8 -d 3 -dt 0.001 -T 0.003 -a 0.1 -sid "unittest-ldg-velocity_driven_flow_dg"
 # CG Methods
 python -m sim -m "LhP" -e velocity_driven_flow -vtx -dh 8 -d 3 -dt 0.001 -T 0.003 -sid "unittest-LhP-velocity_driven_flow"
 python -m sim -m "Lh" -e velocity_driven_flow -vtx -dh 8 -d 3 -dt 0.001 -T 0.003 -sid "unittest-Lh-velocity_driven_flow"

@@ -6,7 +6,7 @@
 set -e
 # ANNIHILATION, defaults: "dim" : 3, "dh" : 2**4, "dt" : 0.0005, "T" : 0.1
 # DG METHODS 
-python -m sim -m "lpdg" -e annihilation_2 -vtx -d 3 -dt 0.001 -a 0.1 -fsr 0.005 -sid "comp-lpdg-annihilation_2"
+python -m sim -m "lpdg" -e annihilation_2_dg -vtx -d 3 -dt 0.001 -a 0.1 -fsr 0.005 -sid "comp-lpdg-annihilation_2"
 # CG Methods
 python -m sim -m "LhP" -e annihilation_2 -vtx -d 3 -dt 0.001 -fsr 0.005 -sid "comp-LhP-annihilation_2"
 # VELOCITY DRIVEN FLOW "dim" : 3, "dh" : 2**4, "dt" : 0.0005, "T" : 2.0

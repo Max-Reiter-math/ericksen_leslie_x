@@ -1,4 +1,6 @@
 from sim.experiments.annihilation_2 import annihilation_2
+from sim.experiments.annihilation_2_dg import annihilation_2_dg
 from sim.experiments.velocity_driven_flow import velocity_driven_flow
+from sim.experiments.velocity_driven_flow_dg import velocity_driven_flow_dg
 from sim.experiments.magical_spiral import spiral
 from sim.experiments.smooth import smooth
