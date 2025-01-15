@@ -88,7 +88,6 @@ def get_d0(x: np.ndarray, dim: int, dh: int)-> np.ndarray:
     return values
 
 def get_dbc(x: np.ndarray, dim: int, dh: int)-> np.ndarray:
-    #TODO round up everything that is close enough to boundary
     if dim not in [2,3]: raise ValueError("Dimension "+str(dim)+" not supported.")
     # x hase shape (dimension, points)
     

@@ -12,8 +12,3 @@ Naming convention
 from sim.models.linear_projection_methods import LL2, LL2P, Lh, LhP
 from sim.models.decoupled_fp_solver import FPhD, FPL2D
 from sim.models.linear_projection_dg import lpdg, ldg
-
-# still private methods
-# from sim.models.coupled_fp_solver import FPhC, FPL2C
-# from sim.models.nonlin_implicit import NLh, NLL2
-# from sim.models.becker_feng_prohl import BFP08_4, BFP08_3

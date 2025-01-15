@@ -5,7 +5,7 @@ from ufl import (ds, inner, Measure)
 """
 The following classes offer pre-initialized boundary conditions without the need to already specify the Function Space. This allows for a more flexible description of boundary conditions which can be then accessed by solvers which make use of a coupled or decoupled formulation.
 """
-# TODO Rewrite and call class Meta Boundary condition
+
 class meta_dirichletbc():
     def __init__(self, quantity: str, locate_dofs: str, values: callable, marker = None, entity_dim = None, entities = None, meshtag = 0):
         self.type = "Dirichlet"

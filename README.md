@@ -10,7 +10,7 @@ $$
 \\
 \nabla \cdot  v = 0,
 \\
-d \times   (\partial_t  d + ( v \cdot \nabla)  d - {(\nabla  v)}_{skw}  d +  \lambda {(\nabla  v)}_{sym}  d - \Delta  d   ) =0,
+d \times   (\partial_t  d + ( v \cdot \nabla)  d - {(\nabla  v)} _{skw}  d +  \lambda {(\nabla  v)} _{sym}  d - \Delta  d   ) =0,
 \\
 \vert d \vert^2 = 1.
 \end{aligned}
@@ -19,20 +19,6 @@ $$
 Depending on the choice of complexity for the different stress tensors, we consider the following submodels.
 
 ### Submodel 1
-
-$$
-\begin{aligned}
-\partial_t  v + ( v \cdot \nabla)  v  + \nabla  p +  \nabla \cdot [\nabla  d]^T   ( I -  d \otimes  d   ) \Delta d    - \nabla \cdot  T^L = 0,
-\\
-\nabla \cdot  v = 0,
-\\
-\partial_t  d +   ( I -  d \otimes  d   ) [ ( v \cdot \nabla)  d - {(\nabla  v)}_{skw}  d +   ( \lambda {(\nabla  v)}_{sym}  d - \Delta  d   ) ] =0,
-\\
-\vert d \vert^2 = 1.
-\end{aligned}
-$$
-
-### Submodel 2
 
 $$
 \begin{aligned}
@@ -46,6 +32,19 @@ $$
 \end{aligned}
 $$
 
+### Submodel 2
+
+$$
+\begin{aligned}
+\partial_t  v + ( v \cdot \nabla)  v  + \nabla  p +  \nabla \cdot [\nabla  d]^T   ( I -  d \otimes  d   ) \Delta d    - \nabla \cdot  T^L = 0,
+\\
+\nabla \cdot  v = 0,
+\\
+\partial_t  d +   ( I -  d \otimes  d   ) [ ( v \cdot \nabla)  d - {(\nabla  v)} _{skw}  d +   ( \lambda {(\nabla  v)} _{sym}  d - \Delta  d   ) ] =0,
+\\
+\vert d \vert^2 = 1.
+\end{aligned}
+$$
 
 ## Numerical Methods
 
