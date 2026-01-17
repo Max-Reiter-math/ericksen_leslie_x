@@ -170,7 +170,8 @@ def saddlept_qn(comm, experiment, args, postprocess=None):
     #SECTION - POSTPROCESSING FOR t=0
 
     if postprocess:
-        postprocess.log_functions(0.0, {"v": v0, "p":p0, "d":d0, "xi":xi0}, mesh = domain) #, meshtags = meshtags)
+        v_out, p_out, d_out, xi_out = vp0.sub(0).collapse(), vp0.sub(1).collapse(), dxi0.sub(0).collapse(), dxi0.sub(1).collapse()
+        postprocess.log_functions(0.0, {"v": v_out, "p":p_out, "d":d_out, "xi":xi_out}, mesh = domain, meshtags = meshtags)
 
     metrics = compute_metrics(comm, args, vp0, dxi0, vp0, dxi0, dxL , H = H) # for initial condition
     if postprocess and comm.rank == 0:
@@ -249,7 +250,8 @@ def saddlept_qn(comm, experiment, args, postprocess=None):
 
         #SECTION - SAVING
         if postprocess: 
-            postprocess.log_functions(t, {"v": v0, "p":p0, "d":d0, "xi":xi0}, mesh = domain, meshtags = meshtags)
+            v_out, p_out, d_out, xi_out = vp0.sub(0).collapse(), vp0.sub(1).collapse(), dxi0.sub(0).collapse(), dxi0.sub(1).collapse()
+            postprocess.log_functions(t, {"v": v_out, "p":p_out, "d":d_out, "xi":xi_out}, mesh = domain, meshtags = meshtags)
 
         #!SECTION
 
