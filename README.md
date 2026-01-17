@@ -18,7 +18,7 @@ where the Ericksen and Leslie stress tensor are given by
 $$
 \begin{aligned}
 T^E = & [\nabla d]^T \frac{\partial E}{\partial \nabla d} , \\
-T^L = & T^D + \lambda [d \otimes (I -d \otimes d )  q]_{\mathrm{sym}} - [d \otimes  q]_{\mathrm{skw}} , \\
+T^L = & T^D + \lambda [d \otimes (I -d \otimes d )  q]_{\mathrm{sym}} - \beta [d \otimes  q]_{\mathrm{skw}} , \\
 T^D = & \mu_4 (\nabla v)_{\mathrm{sym}} \\
 & + (\mu_1 + \frac{\lambda^2}{\gamma}) (d \cdot (\nabla v)_{\mathrm{sym}} d) (d \otimes d) \\
 & + (\mu_5 + \mu_6 - \frac{\lambda^2}{\gamma}) (d \otimes (\nabla v)_{\mathrm{sym}}  d)_{\mathrm{sym}} .
