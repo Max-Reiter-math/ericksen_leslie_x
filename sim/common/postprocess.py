@@ -8,7 +8,8 @@ from dolfinx.io import XDMFFile, VTKFile, VTXWriter
 import adios4dolfinx
 
 class PostProcess:
-    def __init__(self, path: str ="", T: float = 1.0, fsr: float = 0.1, msr: float = 0.05, tbot = None, gui = None, save_as_xdmf: bool = False, save_as_checkpoint: bool = False, save_as_vtk: bool = False, save_as_vtx: bool = True):
+    def __init__(self, comm, path: str ="", T: float = 1.0, fsr: float = 0.1, msr: float = 0.05, tbot = None, gui = None, save_as_xdmf: bool = False, save_as_checkpoint: bool = False, save_as_vtk: bool = False, save_as_vtx: bool = True):
+        self.comm = comm
         self.path = path
         self. T = T                                     # end time point
         self.rounding_places = 10
@@ -61,10 +62,13 @@ class PostProcess:
                     else:
                         resulting_df = normalized_data # if no file exists so far
                     try:
+                        # print(filename)
                         resulting_df.to_csv(filename, mode = "w", encoding="utf-8")
                     except PermissionError:
                         warnings.warn("Cannot access log in csv format currently...")
-                    
+                # send data to GUI
+                if visible: 
+                    self.GUI.update("time", data)
 
             elif time == "static":
                 filename = self.path + "/" + self.static_csv
@@ -75,20 +79,22 @@ class PostProcess:
                     except PermissionError:
                         warnings.warn("Cannot access log in csv format currently...")
                 else:
+                    print(filename)
                     normalized_data.to_csv(filename, mode = "w", encoding="utf-8", index = False)
-            # send data to GUI
-            if visible: 
-                self.GUI.update(data)
+                # send data to GUI
+                if visible: 
+                    self.GUI.update(time, data)
             # send data to telegrambot
             if self.telegram_bot!= None:
                 self.telegram_bot.send_message(data)
         else:
-            self.GUI.update({"Warning":"No log for the parameters category "+str(category) +"and time = "+str(time)+" of type "+str(type(time)) })
+            self.GUI.update(time, {"Warning":"No log for the parameters category "+str(category) +"and time = "+str(time)+" of type "+str(type(time)) })
 
     def log_functions(self, time: float, data: dict, mesh: object = None, meshtags: object = None) -> None:
         """
         Logs dolfinx functions in the via CLI pre-determined formats. Sub-functions are not accepted.
         """
+        
         rounded_time = np.round(time, self.rounding_places)
         next_saving_point = np.round(len(self.f_savingpoints)*self.fsr*self.T, self.rounding_places)
         if rounded_time >= next_saving_point or rounded_time in self.f_savingpoints: 
@@ -99,7 +105,7 @@ class PostProcess:
                 if self.save_as_xdmf:            
                     # create XDMFFile if it does not exist yet
                     if quantity not in self.xdmf_logs.keys():
-                        self.xdmf_logs[quantity] = XDMFFile(MPI.COMM_WORLD, self.path+"/"+str(quantity)+".xdmf", "w")
+                        self.xdmf_logs[quantity] = XDMFFile(self.comm, self.path+"/"+str(quantity)+".xdmf", "w")
                         self.xdmf_logs[quantity].write_mesh(mesh)
                         if meshtags != None:
                             self.xdmf_logs[quantity].write_meshtags(meshtags, mesh.geometry)
@@ -125,28 +131,48 @@ class PostProcess:
                 if self.save_as_vtk:
                     # create VTKFile if it does not exist yet
                     if quantity not in self.vtk_logs.keys():
-                        self.vtk_logs[quantity] = VTKFile(MPI.COMM_WORLD, self.path+"/"+str(quantity)+".pvd", "w")
+                        self.vtk_logs[quantity] = VTKFile(self.comm, self.path+"/"+str(quantity)+".pvd", "w")
                         self.vtk_logs[quantity].write_mesh(mesh)
                     self.vtk_logs[quantity].write_function([data[quantity]], rounded_time ) #, mesh_xpath=f"/Xdmf/Domain/Grid[@Name='{mesh.name}']")
                 #!SECTION
                 #SECTION - SAVE TO VTX
+                
                 if self.save_as_vtx:
+                    # raise ValueError("vtx secured") # works
                     #TODO - Check if given function is the same as the in the VTKXWriter initialized function
                     # create VTXFile if it does not exist yet
                     if quantity not in self.vtx_logs.keys():
-                        self.vtx_logs[quantity] = VTXWriter(MPI.COMM_WORLD, self.path+"/"+str(quantity)+".bp", data[quantity], engine="BP4")
+                        
+                        # raise ValueError(str(self.comm.rank))
+                        # if self.comm.rank == 0:
+                        vtxlog = VTXWriter(self.comm, self.path+"/"+str(quantity)+".bp", data[quantity], engine="BP4")
+                        # else:
+                            
+                            # vtxlog = None
+                            # Broadcast the merged DataFrame
+                        
+                        # raise ValueError(str(self.comm.rank))
+                        self.vtx_logs[quantity] =vtxlog # self.comm.bcast(vtxlog, root=0)
+                        # mess = str(self.comm.rank) + "- log functions called" +str(time) + str(data)
+                        # raise ValueError(mess)
                     # Check if it is the same function
                     self.vtx_logs[quantity].write(rounded_time)
+                    # mess = str(self.comm.rank) + "- log functions called" +str(time) + str(data)
+                    # raise ValueError(mess)
                 #!SECTION
                 #SECTION - SAVE TO CHECKPOINT
                 if self.save_as_checkpoint:
                     if quantity not in self.checkpoint_logs.keys():
                         filename = Path(self.path+"/cp-"+str(quantity)+".bp")
                         self.checkpoint_logs[quantity] = filename
-                        adios4dolfinx.write_mesh(mesh, self.checkpoint_logs[quantity], engine = "BP4")
-                    adios4dolfinx.write_function(data[quantity], self.checkpoint_logs[quantity], engine = "BP4", time=rounded_time) 
+                        adios4dolfinx.write_mesh(self.checkpoint_logs[quantity], mesh, engine = "BP4")
+                    # raise ValueError(self.checkpoint_logs[quantity], quantity)
+                    adios4dolfinx.write_function(self.checkpoint_logs[quantity], data[quantity], engine = "BP4", time=rounded_time, name = quantity) 
                 #!SECTION
-    
+        
+    def log_message(self, message):
+        self.GUI.update_log(message)
+        
     def shutdown(self):
         """
         Method for irregular shutdown

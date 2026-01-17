@@ -2,31 +2,35 @@ from argparse import Namespace
 from functools import partial
 import numpy as np
 from dolfinx.mesh import create_rectangle, create_box, CellType, locate_entities_boundary
+from dolfinx.cpp.mesh import DiagonalType
 from dolfinx.fem import Constant
 from mpi4py import MPI
 from petsc4py.PETSc import ScalarType
 from sim.common.meta_bcs import *
-from sim.common.common_methods import set_attributes
+from sim.common.mesh import circumcenters
 
 class smooth:
-    def __init__(self, args = Namespace()):
+    def __init__(self, comm, args = Namespace()):
         # NAME
         self.name="Smooth solution"
-        # PARAMETERS: v_el, const_A, nu, mu_1, mu_4, mu_5, mu_6, lam
-        default_attributes = {"dh":2**4, "dt":0.0005, "T":2.0, "dim": 2, "t0": 0.0, "v_el":1.0, "const_A":1.0, "nu":0.1,"mu_1":1.0, "mu_4": 0.1, "mu_5":1.0, "mu_6":1.0 , "lam":1.0}
-        set_attributes(self, default_attributes, args)
-
+        self.dim = args.dim
+        self.dh = 2*int(args.dh/2)
+        
         # MESH
         if self.dim == 3:
-            self.mesh = create_box(MPI.COMM_WORLD, [np.array([-1, -1,-1]), np.array([1.0, 1.0,1.0])],  [self.dh,self.dh,self.dh], cell_type = CellType.tetrahedron)
+            self.mesh = create_box(comm, [np.array([-1, -1,-1]), np.array([1.0, 1.0,1.0])],  [self.dh,self.dh,self.dh], cell_type = CellType.tetrahedron)
             self.boundary = boundary_3d
         elif self.dim == 2:
-            self.mesh = create_rectangle(MPI.COMM_WORLD, [np.array([-1.0, -1.0]), np.array([1.0, 1.0])],  [self.dh,self.dh], cell_type = CellType.triangle)
+            self.mesh = create_rectangle(comm, [np.array([-1.0, -1.0]), np.array([1.0, 1.0])],  [self.dh,self.dh], cell_type = CellType.triangle, diagonal=DiagonalType.left_right)
             self.boundary = boundary_2d
 
         # MESHTAGS
         # entities locate_entities_boundary(self.mesh, self.dim-1, self.boundary)
         self.meshtags = None
+
+        #DG0 int points
+        if args.mod in ["linear_dg"]:
+            self.dg0_cells, self.dg0_int_points = circumcenters(self.mesh)
 
         # INIT FUNCTIONS WRT DIMENSION
         d0 = partial(get_d0, dim = self.dim)
@@ -36,7 +40,9 @@ class smooth:
         self.initial_conditions = {"v": no_slip, "p": (lambda x: np.full((x.shape[1],), 0.0)), "d": d0}
 
         # BOUNDARY CONDITIONS
-        self.boundary_conditions = [meta_dirichletbc("v", "geometrical", no_slip,  marker = self.boundary)]
+        self.boundary_conditions = [
+            meta_dirichletbc("v", "geometrical", no_slip,  marker = self.boundary),
+            ]
         # self.boundary_conditions += [meta_dirichletbc("d", "geometrical", d0, marker = self.boundary)] # Comment out for homogeneous Neumann Boundary Conditions
     
     @property

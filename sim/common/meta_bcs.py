@@ -16,6 +16,9 @@ class meta_dirichletbc():
         self.dim = entity_dim               # this is used if dofs are located topologically
         self.values = values                # this is the callable to prescribe the conditions
         self.meshtag = meshtag              # if no meshtag is given the whole domain of the boundary will be assumed
+
+    def __str__ (self):
+        return str({"type" : self.type, "quantity" : self.quantity, "find_dofs" : self.find_dofs, "marker" : self.marker, "entitites" : self.entities, "dim" : self.dim, "values": self.values, "meshtag" : self.meshtag})
         
     def set_fs(self, FS, map = None):
         """
@@ -28,16 +31,19 @@ class meta_dirichletbc():
             collapsed_FS = FS    
             sub_FS = FS
         self.u_D = Function(collapsed_FS)
+
         if self.find_dofs == "topological":
-            boundary_dofs = locate_dofs_topological(FS, (collapsed_FS.mesh.topology.dim-1), self.entities)
+            self.boundary_dofs = locate_dofs_topological(V = FS, entity_dim = (collapsed_FS.mesh.topology.dim-1), entities = self.entities)
         elif self.find_dofs == "geometrical":
-            boundary_dofs = locate_dofs_geometrical(FS, self.marker)
-        else: raise TypeError("Unknown method: {0:s}".format(self.find_dofs))
+            self.boundary_dofs = locate_dofs_geometrical(FS, self.marker)
+        else: 
+            raise TypeError("Unknown method: {0:s}".format(self.find_dofs))
+        
         self.u_D.interpolate(self.values) #, boundary_dofs)      # reduced dofs should be enough here, ask for this in fenics discourse
         if type(FS) == tuple:
-            self.bc = dirichletbc(self.u_D, boundary_dofs, sub_FS)
+            self.bc = dirichletbc(self.u_D, self.boundary_dofs, sub_FS)
         else:
-            self.bc = dirichletbc(self.u_D, boundary_dofs)
+            self.bc = dirichletbc(self.u_D, self.boundary_dofs)
         
 class meta_componentdirichletbc(meta_dirichletbc):
     def __init__(self, quantity: str, locate_dofs: str, values: callable, marker = None, entity_dim = None, entities = None, meshtag = 0, component = 0):

@@ -9,6 +9,37 @@ from dolfinx.geometry import bb_tree, compute_collisions_points, compute_collidi
 from dolfinx import geometry
 from dolfinx.io import XDMFFile
 
+def mpi_time(comm, start = None):
+    comm.Barrier()
+    if start == None:
+        return MPI.Wtime()
+    else:
+        elapsed_local = MPI.Wtime() - start
+        elapsed_global = comm.allreduce(elapsed_local, op=MPI.MAX)  
+        return elapsed_global
+
+def update_and_scatter(list_to_update, list_to_update_with):
+    for (u, u_update) in list(zip(list_to_update,list_to_update_with)):
+        u_update.x.scatter_forward()
+        u.x.array[:] = u_update.x.array[:]
+        u.x.scatter_forward()
+
+def scatter_all(list):
+    for u in list:
+        u.x.scatter_forward()
+
+def nodal_normalization(d, dim):
+    d.x.scatter_forward()
+
+    coeffs = np.reshape( d.x.array[:] , (-1, dim)) # has shape (#nodes, dim)
+    norms = np.linalg.norm(coeffs, axis=1, keepdims=True).flatten() 
+    zero_norm_dofs = np.isclose(norms, 0.0) # do not correct zero values
+    coeffs[~zero_norm_dofs, :] = coeffs[~zero_norm_dofs, :] / norms[~zero_norm_dofs, np.newaxis]
+    # Overwrite coefficients
+    d.x.array[:] = np.reshape(coeffs, (-1,))
+
+    d.x.scatter_forward()
+
 #SECTION - Projections
 
 def project(f: Function, V: functionspace, bcs: list = [])-> Function:
@@ -160,12 +191,12 @@ def test_ptw_orthogonality(f: Function, g: Function, exclude = None)-> dict:
 
 
 def angle_between(f, g, dim):
-    farray = f.vector[:]
+    farray = f.x.array
     freshaped_array = np.reshape(    farray , (-1, dim))
     fnorms = np.linalg.norm(freshaped_array, axis=1, keepdims=True) 
     frescaled_array = freshaped_array / fnorms
 
-    garray = g.vector[:]
+    garray = g.x.array
     greshaped_array = np.reshape(    garray , (-1, dim))
     gnorms = np.linalg.norm(greshaped_array, axis=1, keepdims=True) 
     grescaled_array = greshaped_array / gnorms

@@ -1,0 +1,13 @@
+{
+    "-vtx" : [1],
+    "-dh" : [5],
+    "-dt" : [0.01], 
+    "-T" : [0.01], 
+    "-fsr" : [0.01],
+    "-msr" : [0.01],
+    "-ovw" : [1],
+    "-sid" : ["unit"],
+    "-n" : [2],    
+    "-m" : ["linear_dg", "linear_cg", "fp_coupled", "fp_decoupled", "nonlin_cg", "bfp_n", "bfp_fp", "sp_lin","sp_fp"],
+    "-e" : ["spiral","smooth", "shear_spiral", "poiseuille", "stb3d", "annihilation", "swirl"]
+}

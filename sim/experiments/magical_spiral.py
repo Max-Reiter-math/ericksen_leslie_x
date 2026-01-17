@@ -2,13 +2,13 @@ import os
 from argparse import Namespace
 from functools import partial
 import numpy as np
-
-from mpi4py import MPI
+from basix.ufl import element
 from dolfinx.io import XDMFFile
+from dolfinx.mesh import locate_entities_boundary
 from sim.common.meta_bcs import *
-from sim.common.common_methods import set_attributes
-from sim.common.common_fem_methods import angle_between
+from sim.common.common_fem_methods import nodal_normalization
 from sim.common.error_computation import *
+from sim.common.mesh import circumcenters
 
 """
 class for a standard benchmark setting for the ericksen-leslie model: 
@@ -16,38 +16,30 @@ class for a standard benchmark setting for the ericksen-leslie model:
 """
 
 class spiral:
-    def __init__(self, args = Namespace()):
+    def __init__(self, comm, args = Namespace()):
         # NAME
-        self.name="magical spiral"
-        # PARAMETERS v_el, const_A, nu, mu_1, mu_4, mu_5, mu_6, lam
-        default_attributes = {"dim" : 2, "dh" : 10, "dt" : 0.001, "T" :  1.5, "t0": 0, "v_el": 1, "const_A":1.0, "nu":1.0,"mu_1":1.0, "mu_4": 1.0, "mu_5":1.0, "mu_6":1.0 , "lam":1.0, "algo2D": 6, "algo3D": 1}
-        set_attributes(self, default_attributes, args)
+        self.name="spiral"
 
         # SECTION - MESH AND MESHTAGS
-        mesh_loc = "input/meshes/spiral_"+str(self.dim)+"D_dh_"+str(self.dh)
+        mesh_loc = "input/meshes/spiral2D_"+str(args.dh)
         
         if os.path.isfile(mesh_loc+".xdmf"):
             # mesh exists in xdmf format
-            with XDMFFile(MPI.COMM_WORLD, mesh_loc+".xdmf" , "r") as f:
+            with XDMFFile(comm, mesh_loc+".xdmf" , "r") as f:
                 self.mesh = f.read_mesh()
-                self.cell_tags = f.read_meshtags(self.mesh, name = "cell_tags")
                 self.mesh.topology.create_connectivity(self.mesh.topology.dim - 1, self.mesh.topology.dim)
-                self.meshtags = f.read_meshtags(self.mesh, name =  "facet_tags")
-
-        elif os.path.isfile(mesh_loc+".msh"):
-            # mesh exists in msh format
-            from dolfinx.io import gmshio
-            self.mesh, self.cell_tags, self.meshtags = gmshio.read_from_msh(mesh_loc+".msh", MPI.COMM_WORLD, 0, gdim=self.dim)
+                self.meshtags = f.read_meshtags(self.mesh, name =  "mesh_tags")
 
         else:
             raise FileNotFoundError("Could not find any mesh in msh or xdmf format under "+mesh_loc+"... To run this experiment the according mesh is needed as input.")
-            
-        inside, outside, up, down  =  self.meshtags.find(2) ,  self.meshtags.find(3) ,  self.meshtags.find(4),  self.meshtags.find(5)
+        
+        self.dim = 2
+        self.boundary = boundary
+        inside, outside  =  self.meshtags.find(2) ,  self.meshtags.find(3)
 
-        if self.dim == 2: 
-            self.boundary = boundary_2d
-        elif self.dim == 3: 
-            self.boundary = boundary_3d
+        #DG0 int points
+        if args.mod in ["linear_dg"]:
+            self.dg0_cells, self.dg0_int_points = circumcenters(self.mesh)
         #!SECTION
 
 
@@ -60,14 +52,10 @@ class spiral:
         self.initial_conditions = {"v": v0, "p": (lambda x: np.full((x.shape[1],), 0.0)), "d": d0}
 
         # BOUNDARY CONDITIONS
-        self.boundary_conditions = [meta_dirichletbc("d", "topological", dbc, entities = outside, meshtag=3), \
-                                    meta_dirichletbc("d", "topological", dbc, entities = inside, meshtag=2), \
-                                    meta_dirichletbc("v", "topological", v0, entities= outside, meshtag=3), \
-                                    meta_dirichletbc("v", "topological", v0, entities= inside, meshtag=2)]
-        if self.dim ==3:
-            self.boundary_conditions += [ meta_componentdirichletbc("d", "topological", partial(get_no_slip, dim = 1),  entities = up, component = 2), \
-                                         meta_componentdirichletbc("d", "topological", partial(get_no_slip, dim = 1),  entities = down, component = 2) ]
-    
+        self.boundary_conditions = [meta_dirichletbc("d", "topological", dbc, entities = outside, marker = bd_outside, meshtag=3), \
+                                    meta_dirichletbc("d", "topological", dbc, entities = inside, marker = bd_inside, meshtag=2), \
+                                    meta_dirichletbc("v", "topological", v0, entities= outside, marker = bd_outside, meshtag=3), \
+                                    meta_dirichletbc("v", "topological", v0, entities= inside, marker = bd_inside, meshtag=2)]
     @property
     def info(self):
         return {"name":self.name}
@@ -78,39 +66,45 @@ class spiral:
     
     def exact_sol(self, x: np.ndarray) -> np.ndarray:
     # x hase shape (dimension, points)
-        values = np.zeros(x.shape[1])
+        values = np.zeros((self.dim, x.shape[1]))
         r = np.sqrt(x[0]**2 + x[1]**2)    
         r0 = 1
         r1 = 2
-        values = np.pi/2 * np.log(r/r0)/np.log(r1/r0)
+        angle = np.pi/2 * np.log(r/r0)/np.log(r1/r0)
+        # Rotation matrix: The matrix rotates points clockwise around the origin by an angle θ
+        # R(θ) =    | cos(θ)  sin(θ) |
+        #           | -sin(θ)   cos(θ) |
+
+        # Rotate radial direction
+        values[0]= np.cos(angle)*x[0] + np.sin(angle)*x[1]
+        values[1]= (-1)*np.sin(angle)*x[0] + np.cos(angle)*x[1]
+
+        # renormalization
+        norms = np.linalg.norm(values, ord = 2, axis = 0) # compute euclidean norm
+        values = values / norms # renormalize
+
         return values
     
-    def compute_error(self, uh_, time, norm = "L2", degree_raise = 3):
+    def compute_error(self, comm, uh, time, norm = "L2", degree_raise = 3, family = None, degree = None):
         # arg time is not necessary for this class since we only consider the steady state limit of phi as exact solution
         # obtain FunctionSpace from approximate function
-        # mesh   = uh_.function_space.mesh
-        degree = uh_.function_space.ufl_element().degree()
-        family = uh_.function_space.ufl_element().family()
- 
-        Q = FunctionSpace(self.mesh, (family, degree))
-        Qr = FunctionSpace(self.mesh, (family, degree+degree_raise))
-        D = VectorFunctionSpace(self.mesh, (family, degree), self.dim)
-        # Compute and interpolate Angle
-        # - compute radial lines first
-        u_r, uh = Function(D), Function(D)
-        u_r.interpolate(partial(unit_radials, dim = self.dim)) 
-
-        # uh.x.array[:] = project(uh_,V, bcs= []):
-        uh.interpolate(uh_)
-
-        phi = Function(Q)
-        phi.x.array[:] = angle_between(uh, u_r, self.dim)
-
-        phir = Function(Qr)
-        phir.interpolate(phi)
-
-        err = errornorm(phi, self.exact_sol, norm = norm, degree_raise = degree_raise)
+        if degree == None:
+            degree = uh.function_space.ufl_element().degree
+        if family == None:
+            family = uh.function_space.ufl_element().family_name
         
+        # raise VectorFunctionSpace
+        FSr = functionspace(self.mesh, element(family, self.mesh.basix_cell(), degree+degree_raise, shape=(self.dim,)))
+        uex = Function(FSr)
+        uex.interpolate(self.exact_sol)
+        uex.x.scatter_forward() 
+
+        # Normalize uh to only compare the angle essentially:
+        nodal_normalization(uh,2)
+
+        err_local   = assemble_scalar(form(inner(uh-uex,uh-uex)*dx))
+        err         = comm.allreduce(err_local, op=MPI.SUM)**0.5
+
         return err
 
 #SECTION - CUSTOM FUNCTIONS
@@ -120,8 +114,7 @@ def get_d0(x: np.ndarray, dim: int) -> np.ndarray:
     # x hase shape (dimension, points)
 
     values = np.zeros((dim, x.shape[1])) # values is going to be the output
-    outside_dofs = bd_outside(x) # array of True and False giving the defect locations
-    # rest = np.invert(outside_dofs)    
+    outside_dofs = bd_outside(x) # array of True and False giving the defect locations  
 
     # Setting 
     # - normal to the boundary with some tilt described by eta
@@ -141,26 +134,26 @@ def get_d0(x: np.ndarray, dim: int) -> np.ndarray:
     return values
 
 def get_d_bc(x: np.ndarray, dim: int) -> np.ndarray:
-        if dim not in [2,3]: raise ValueError("Dimension "+str(dim)+" not supported.")
-        # x hase shape (dimension, points)
+    if dim not in [2,3]: raise ValueError("Dimension "+str(dim)+" not supported.")
+    # x hase shape (dimension, points)
 
-        values = np.zeros((dim, x.shape[1])) # values is going to be the output  
+    values = np.zeros((dim, x.shape[1])) # values is going to be the output  
 
-        # Setting 
-        # - normal to the boundary with some tilt described by eta
-        r = (x[0]**2 + x[1]**2)**(1/2)
-        inner_half = r < 1.5
-        outer_half = r >= 1.5
-        values[0][outer_half]= x[1][outer_half] 
-        values[1][outer_half]= -x[0][outer_half]
-        values[0][inner_half]= x[0][inner_half]
-        values[1][inner_half]= x[1][inner_half]
-        if dim == 3: values[2]=0.0
+    # Setting 
+    # - normal to the boundary with some tilt described by eta
+    r = (x[0]**2 + x[1]**2)**(1/2)
+    inner_half = r < 1.5
+    outer_half = r >= 1.5
+    values[0][outer_half]= x[1][outer_half] 
+    values[1][outer_half]= -x[0][outer_half]
+    values[0][inner_half]= x[0][inner_half]
+    values[1][inner_half]= x[1][inner_half]
+    if dim == 3: values[2]=0.0
 
-        # renormalization
-        norms = np.linalg.norm(values, ord = 2, axis = 0) # compute euclidean norm
-        values = values / norms # renormalize
-        return values
+    # renormalization
+    norms = np.linalg.norm(values, ord = 2, axis = 0) # compute euclidean norm
+    values = values / norms # renormalize
+    return values
 
 
 def get_no_slip(x: np.ndarray, dim: int) -> np.ndarray:
@@ -188,14 +181,8 @@ def unit_radials(x: np.ndarray, dim: int) -> np.ndarray:
 
 #SECTION - GEOMETRIC BOUNDARY DESCRIPTION
 
-def boundary_3d(x: np.ndarray) -> np.ndarray:
-    return np.logical_or.reduce((bd_disks(x), bd_inside(x), bd_outside(x)))
-
-def boundary_2d(x: np.ndarray) -> np.ndarray:
+def boundary(x: np.ndarray) -> np.ndarray:
     return np.logical_or(bd_inside(x), bd_outside(x))
-
-def bd_disks(x):
-    return np.logical_or(np.isclose(x[2],0),np.isclose(x[2],1))
 
 def bd_outside(x):
     return np.isclose(x[0]**2 + x[1]**2, 4)

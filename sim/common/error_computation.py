@@ -3,12 +3,12 @@ from typing import Union
 from pathlib import Path
 from mpi4py import MPI
 import numpy as np
-from dolfinx.fem import Function, functionspace, form, VectorFunctionSpace, assemble_scalar, Expression, ElementMetaData
+from dolfinx.fem import Function, functionspace, form,  assemble_scalar, Expression, ElementMetaData
 from dolfinx.mesh import GhostMode
 from ufl import dx, grad, inner
 from dolfinx.io import XDMFFile
 from ufl.core.expr import Expr
-from ufl import div, dx, grad, inner, VectorElement, FiniteElement, MixedElement, TrialFunction, TrialFunctions, TestFunctions, TestFunction, split, Measure, lhs, rhs, FacetNormal
+from ufl import div, dx, grad, inner, TrialFunction, TrialFunctions, TestFunctions, TestFunction, split, Measure, lhs, rhs, FacetNormal
 
 def errornorm(uh: Function, u_ex: Function, norm: str = "L2", degree_raise: int =3, mode: str = "abs")-> float:
     """
@@ -41,6 +41,7 @@ def errornorm(uh: Function, u_ex: Function, norm: str = "L2", degree_raise: int 
     if type(u_ex) == Function or degree_raise > 0:
         u_W = Function(W)
         u_W.interpolate(uh)
+        u_W.x.scatter_forward()
     else:
         u_W = uh
 
@@ -55,12 +56,15 @@ def errornorm(uh: Function, u_ex: Function, norm: str = "L2", degree_raise: int 
             print(isinstance(u_ex, Expr))
             u_expr = Expression(u_ex, W.element.interpolation_points())
             u_ex_W.interpolate(u_expr)
+            u_ex_W.x.scatter_forward()
         else:
             u_ex_W.interpolate(u_ex)
+            u_ex_W.x.scatter_forward()
     
     # Compute the error in the higher order function space
     e_W = Function(W)
     e_W.x.array[:] = u_W.x.array - u_ex_W.x.array
+    e_W.x.scatter_forward()
     
     # Integrate the error
     if norm == "L2":
@@ -95,3 +99,34 @@ def errornorm(uh: Function, u_ex: Function, norm: str = "L2", degree_raise: int 
         if mode == "rel": 
             error_global = error_global /np.linalg.norm(u_ex_W.x.array[:], np.inf) 
     return error_global 
+
+def L2_norm(comm,f, print_local=False):
+    L2_integral = inner(f , f)*dx
+    err_local   = assemble_scalar(form(L2_integral))
+    if print_local: print(f"Rank {comm.rank}: Local L^2-integral: {err_local}")
+    err_global = comm.allreduce(err_local, op=MPI.SUM)**0.5
+    return err_global
+
+if __name__ == "__main__":
+    from dolfinx.mesh import create_interval
+    from dolfinx.fem import FunctionSpace
+
+    nx = 10
+    comm = MPI.COMM_WORLD
+    rank = comm.rank
+    if rank == 0: print(f"{comm.size} MPI ranks activated")
+    domain = create_interval(comm, nx, [-1,1])
+
+    P1 = FunctionSpace(domain, ("Lagrange", 1))
+
+    print(f"Rank {rank}: Global dofmap size: {P1.dofmap.index_map.size_global}")
+    print(f"Rank {rank}: Local dofmap size: {P1.dofmap.index_map.size_local}")
+    print(f"Rank {rank}: Ghosts: {P1.dofmap.index_map.ghosts}")
+
+    f = Function(P1)
+    f.interpolate(lambda x: x[0]) # interpolate identity (coordinates are always given in 3D)
+
+    err = L2_norm(comm,f, print_local=True)
+    print(f"Rank {rank}: Global L^2-norm: {err}")
+    assert err**2 == 2/3
+    
