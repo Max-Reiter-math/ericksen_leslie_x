@@ -4,11 +4,6 @@
 *.pyo
 *.pyd
 
-nozzle*.xdmf 
-nozzle*.h5
-nozzle*.msh
-
-
 *.session
 sim_suite/tests
 

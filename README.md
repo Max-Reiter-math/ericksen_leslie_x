@@ -1,7 +1,7 @@
 # ericksen_leslie_x
 FEniCSx implementation of numerical methods for the Ericksen-Leslie equations for nematic liquid crystal flow.
 
-## Governing equations
+## Governing Equations
 The governing equations in a general form can be stated as:
 
 $$
@@ -66,7 +66,7 @@ Currently the following numerical schemes are available (key : explanation).
 
 They can be selected by specifying the command line key "-m" or "--mod".
 
-## Numerical settings
+## Numerical Settings
 
 - spiral : spiral domain with a known stationary solution, see [[3,5]](#5). [Video](https://www.youtube.com/watch?v=sHxAj4r7gFg)
 - smooth : smooth initial condition on a unit square, see [[4]](#4). [Video](https://www.youtube.com/watch?v=y-54CS1tCGM)
