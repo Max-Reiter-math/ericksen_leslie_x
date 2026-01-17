@@ -94,7 +94,7 @@ python -m sim.run -m linear_cg -e spiral -vtx 1 -dt 0.01 -sid "spiral-experiment
 
 Presets for several simulations are given in the folder 'sim/sim_presets/' usually in the form of a bash or python file. Examples for usage:
 ```
-sim/sim_presets/4shear.sh
+sim/sim_presets/unit.sh
 ```
 
 Physical parameters of the governing equations and the energy term can be changed via command line arguments, i.e.
@@ -127,9 +127,6 @@ conda create --name my-env-name --file requirements.txt -c conda-forge
 - Results are automatically named and saved in the folder 'output/'
 
 ## References to relevant publications
-
-List references with links to publications this code was used for:
-- The decoupled fixed point solver is based on [[1]](#1).
 
 <a id="1">[1]</a> 
 Lasarzik, R., & Reiter, M. E. V. (2023). Analysis and numerical approximation of energy-variational solutions to the Ericksen-Leslie equations. Acta Appl. Math., 184, 44. https://doi.org/10.1007/s10440-023-00563-9
