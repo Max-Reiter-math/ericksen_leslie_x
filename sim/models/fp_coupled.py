@@ -259,6 +259,12 @@ def fp_coupled(comm, experiment, args, postprocess=None):
             #!SECTION
 
             #SECTION - UPDATE AT END OF FIXED POINT ITERATION
+            # SECTION - NODAL PROJECTION STEP FOR TANGENT MAP
+            if args.project_tangent_map == 1:
+                nodal_normalization(dl, dim)
+                # NOTE - this decreases the amount of inner iterations needed for coarse time steps, since the intermediate solution of the director field satisfies: $d \in L^{\infty}$.
+                # NOTE - this works heuristically as long as the director field does not become zero at the interpolation points.
+            #!SECTION 
             update_and_scatter([vl_, dl_], [vl, dl])
             #!SECTION
 
