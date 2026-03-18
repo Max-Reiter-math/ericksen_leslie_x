@@ -432,7 +432,7 @@ while t < T:
     # Normalization
     nodal_normalization(d, dim)
     
-    # properties before nodal normalization
+    # properties after nodal normalization
     e_ela = energy(d)
     unit_max = np.max(np.linalg.norm(np.reshape( d.x.array[:] , (-1, dim)), axis=1))    
     unit_min = np.min(np.linalg.norm(np.reshape( d.x.array[:] , (-1, dim)), axis=1))
