@@ -80,6 +80,8 @@ They can be selected by specifying the command line key "-e" or "--exp".
 
 ## Getting Started and Usage
 
+In the folder _tutorials_, jupyter notebooks and python files can be found, explaining the main methods in detail interactively.
+
 All arguments to run simulations are given via the command line input. To see the options run the following command in the package directory:
 
 ```
