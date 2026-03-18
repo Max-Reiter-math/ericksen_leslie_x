@@ -220,7 +220,7 @@ ksp.getPC().setType("lu")
 ksp.getPC().setFactorSolverType(PETSc.Mat.SolverType.MUMPS)
 
 # %% [markdown]
-# Setup Output Pipeline for the director and velocity field and save for $t = 0$. Due to the mixed space, we first interpolate the functions into the collapsed space before writing to file. As output format, we use the vtx format this time instead of the xdmf format. 
+# Setup Output Pipeline for the director and velocity field and save for $t = 0$. As output format, we use the vtx format this time instead of the xdmf format. 
 
 # %%
 from dolfinx.fem import form, assemble_scalar
