@@ -311,7 +311,7 @@ def variational_form(dxL, v1, p1, d1, q1, v0, p0, d0, q0, v00, d00, a, h, b, c, 
         # SECTION MOMENTUM EQUATION
         a_11 = 3/2*inner( v1 , a )*dx # discrete time derivative (BDF2)
 
-        a_11 += dt* ( inner(dot(v0, nabla_grad(v1)), a) + 0.5*div(v0)*inner(v1, a)  )*dx # temam's convection term
+        a_11 += dt* ( inner(dot(v_, nabla_grad(v1)), a) + 0.5*div(v_)*inner(v1, a)  )*dx # temam's convection term
 
         if args.mu4 != 0.0:
             if args.sym_grad:
