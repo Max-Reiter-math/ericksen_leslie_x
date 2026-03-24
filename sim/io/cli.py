@@ -1,6 +1,7 @@
 import argparse
 from datetime import datetime
 from sim.models.linear_cg import linear_cg
+from sim.models.linear_cg_bdf2 import linear_cg_bdf2
 from sim.models.linear_dg import linear_dg
 from sim.models.fp_coupled import fp_coupled
 from sim.models.fp_decoupled import fp_decoupled
@@ -40,6 +41,7 @@ EXPERIMENT_REGISTRY = {
 
 MODEL_REGISTRY = {
     "linear_cg": linear_cg,
+    "linear_cg_bdf2": linear_cg_bdf2,
     "linear_dg": linear_dg,
     "fp_coupled" : fp_coupled,
     "fp_linear" : fp_linear,

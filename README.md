@@ -54,6 +54,7 @@ $$
 Currently the following numerical schemes are available (key : explanation).
 - nonlin_cg : Numerical Method in [[1]](#1). Implemented using a monolithic Newton solver.
 - linear_cg : Algorithm 1 in [[3]](#3). Linear projection method.
+- linear_cg_bdf2 : BDF2 discretization of the above method.
 - linear_dg : Algorithm 2 in [[3]](#3). Linear projection method based on the DG method.
 - fp_decoupled : Numerical Method in [[1]](#1) with an iterative Picard-type linearization, see [[2]](#2).
 - fp_coupled : Numerical Method in [[1]](#1) with an iterative Picard-type linearization similar to fp_decoupled.
