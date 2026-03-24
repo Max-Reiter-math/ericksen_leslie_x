@@ -90,7 +90,7 @@ def linear_cg_bdf2(comm, experiment, args, postprocess=None):
     v0.interpolate(initial_conditions["v"]) 
     p0.interpolate(initial_conditions["p"]) 
     d0.interpolate(initial_conditions["d"]) 
-    d_.interpolate(initial_conditions["d"]) 
+    update_and_scatter([v00, d00, d_],[v0,d0,d0])
     if "H" in initial_conditions.keys():
         H = Function(D)
         H.interpolate(initial_conditions["H"])
