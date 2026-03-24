@@ -20,7 +20,6 @@ from sim.experiments.annihilation_2 import annihilation_2
 from sim.experiments.velocity_driven_flow import velocity_driven_flow
 from sim.experiments.magical_spiral import spiral
 from sim.experiments.smooth import smooth
-from sim.experiments.stbof3D import stb3D
 from sim.experiments.poiseuille import poiseuille
 from sim.experiments.shear_spiral import shear_spiral
 from sim.experiments.valve import valve
@@ -32,7 +31,6 @@ EXPERIMENT_REGISTRY = {
     "smooth": smooth,
     "annihilation" : annihilation_2,
     "swirl" : velocity_driven_flow,
-    "stb3d" : stb3D,
     "poiseuille" : poiseuille,
     "shear_spiral" : shear_spiral,
     "valve": valve,
