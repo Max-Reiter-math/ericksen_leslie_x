@@ -4,6 +4,7 @@ import numpy as np
 from dolfinx.mesh import create_rectangle, create_box, CellType
 from dolfinx.cpp.mesh import DiagonalType
 from dolfinx.fem import Constant
+from dolfinx.mesh import GhostMode
 from mpi4py import MPI
 from petsc4py.PETSc import ScalarType
 from sim.common.meta_bcs import *
@@ -30,10 +31,10 @@ class velocity_driven_flow:
             celltype = CellType.triangle
 
         if self.dim == 3:
-            self.mesh = create_box(MPI.COMM_WORLD, [np.array([-0.5, -0.5,-0.5]), np.array([0.5, 0.5,0.5])],  [self.dh,self.dh,self.dh], cell_type = celltype)
+            self.mesh = create_box(MPI.COMM_WORLD, [np.array([-0.5, -0.5,-0.5]), np.array([0.5, 0.5,0.5])],  [self.dh,self.dh,self.dh], cell_type = celltype, ghost_mode=GhostMode.shared_facet)
             self.boundary = boundary_3d
         elif self.dim == 2:
-            self.mesh = create_rectangle(MPI.COMM_WORLD, [np.array([-0.5, -0.5]), np.array([0.5, 0.5])],  [self.dh,self.dh], cell_type = celltype, diagonal = DiagonalType.left_right)
+            self.mesh = create_rectangle(MPI.COMM_WORLD, [np.array([-0.5, -0.5]), np.array([0.5, 0.5])],  [self.dh,self.dh], cell_type = celltype, diagonal = DiagonalType.left_right, ghost_mode=GhostMode.shared_facet)
             self.boundary = boundary_2d
 
         # MESHTAGS

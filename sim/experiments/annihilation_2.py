@@ -1,7 +1,7 @@
 from argparse import Namespace
 from functools import partial
 import numpy as np
-from dolfinx.mesh import create_rectangle, create_box, CellType, locate_entities, locate_entities_boundary, meshtags, meshtags_from_entities
+from dolfinx.mesh import create_rectangle, create_box, CellType, locate_entities, locate_entities_boundary, meshtags, meshtags_from_entities, GhostMode
 from dolfinx.cpp.mesh import DiagonalType
 from dolfinx.fem import Constant
 from mpi4py import MPI
@@ -30,10 +30,10 @@ class annihilation_2:
             celltype = CellType.triangle
 
         if self.dim == 3:
-            self.mesh = create_box(MPI.COMM_WORLD, [np.array([-0.5, -0.5,-0.5]), np.array([0.5, 0.5,0.5])],  [self.dh,self.dh,self.dh], cell_type = celltype)
+            self.mesh = create_box(MPI.COMM_WORLD, [np.array([-0.5, -0.5,-0.5]), np.array([0.5, 0.5,0.5])],  [self.dh,self.dh,self.dh], cell_type = celltype, ghost_mode=GhostMode.shared_facet)
             self.boundary = boundary_3d
         elif self.dim == 2:
-            self.mesh = create_rectangle(MPI.COMM_WORLD, [np.array([-0.5, -0.5]), np.array([0.5, 0.5])],  [self.dh,self.dh], cell_type = celltype, diagonal = DiagonalType.left_right)
+            self.mesh = create_rectangle(MPI.COMM_WORLD, [np.array([-0.5, -0.5]), np.array([0.5, 0.5])],  [self.dh,self.dh], cell_type = celltype, diagonal = DiagonalType.left_right, ghost_mode=GhostMode.shared_facet)
             self.boundary = boundary_2d
         
         # MESHTAGS

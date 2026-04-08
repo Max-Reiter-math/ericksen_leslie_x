@@ -1,7 +1,7 @@
 from argparse import Namespace
 from functools import partial
 import numpy as np
-from dolfinx.mesh import create_rectangle, create_box, CellType, locate_entities_boundary
+from dolfinx.mesh import create_rectangle, create_box, CellType, locate_entities_boundary, GhostMode
 from dolfinx.cpp.mesh import DiagonalType
 from dolfinx.fem import Constant
 from mpi4py import MPI
@@ -18,10 +18,10 @@ class smooth:
         
         # MESH
         if self.dim == 3:
-            self.mesh = create_box(comm, [np.array([-1, -1,-1]), np.array([1.0, 1.0,1.0])],  [self.dh,self.dh,self.dh], cell_type = CellType.tetrahedron)
+            self.mesh = create_box(comm, [np.array([-1, -1,-1]), np.array([1.0, 1.0,1.0])],  [self.dh,self.dh,self.dh], cell_type = CellType.tetrahedron, ghost_mode=GhostMode.shared_facet)
             self.boundary = boundary_3d
         elif self.dim == 2:
-            self.mesh = create_rectangle(comm, [np.array([-1.0, -1.0]), np.array([1.0, 1.0])],  [self.dh,self.dh], cell_type = CellType.triangle, diagonal=DiagonalType.left_right)
+            self.mesh = create_rectangle(comm, [np.array([-1.0, -1.0]), np.array([1.0, 1.0])],  [self.dh,self.dh], cell_type = CellType.triangle, diagonal=DiagonalType.left_right, ghost_mode=GhostMode.shared_facet)
             self.boundary = boundary_2d
 
         # MESHTAGS

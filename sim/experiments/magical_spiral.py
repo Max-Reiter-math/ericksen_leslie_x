@@ -4,7 +4,7 @@ from functools import partial
 import numpy as np
 from basix.ufl import element
 from dolfinx.io import XDMFFile
-from dolfinx.mesh import locate_entities_boundary
+from dolfinx.mesh import locate_entities_boundary, GhostMode
 from sim.common.meta_bcs import *
 from sim.common.common_fem_methods import nodal_normalization
 from sim.common.error_computation import *
@@ -26,7 +26,7 @@ class spiral:
         if os.path.isfile(mesh_loc+".xdmf"):
             # mesh exists in xdmf format
             with XDMFFile(comm, mesh_loc+".xdmf" , "r") as f:
-                self.mesh = f.read_mesh()
+                self.mesh = f.read_mesh(ghost_mode=GhostMode.shared_facet)
                 self.mesh.topology.create_connectivity(self.mesh.topology.dim - 1, self.mesh.topology.dim)
                 self.meshtags = f.read_meshtags(self.mesh, name =  "mesh_tags")
 

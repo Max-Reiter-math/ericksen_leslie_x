@@ -1,7 +1,7 @@
 from argparse import Namespace
 from functools import partial
 import numpy as np
-from dolfinx.mesh import create_rectangle, CellType, locate_entities_boundary
+from dolfinx.mesh import create_rectangle, CellType, locate_entities_boundary, GhostMode
 from dolfinx.cpp.mesh import DiagonalType
 from sim.common.meta_bcs import *
 from sim.common.mesh import circumcenters
@@ -22,7 +22,7 @@ class poiseuille:
         
         
         # MESH
-        self.mesh = create_rectangle(comm, [np.array([0.0, -1.0]), np.array([self.L, 1.0])],  [self.dh,self.dh], cell_type = CellType.triangle, diagonal=DiagonalType.left_right)
+        self.mesh = create_rectangle(comm, [np.array([0.0, -1.0]), np.array([self.L, 1.0])],  [self.dh,self.dh], cell_type = CellType.triangle, diagonal=DiagonalType.left_right, ghost_mode=GhostMode.shared_facet)
 
         # MESHTAGS
         self.meshtags = None
