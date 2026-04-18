@@ -7,6 +7,7 @@ from sim.models.fp_coupled import fp_coupled
 from sim.models.fp_decoupled import fp_decoupled
 from sim.models.fp_linear import fp_linear
 from sim.models.nonlin_cg import nonlin_cg
+from sim.models.nonlin_p import nonlin_p
 from sim.models.saddlept_lin import saddlept_lin
 from sim.models.saddlept_n import saddlept_n
 from sim.models.saddlept_qn import saddlept_qn
@@ -50,6 +51,7 @@ MODEL_REGISTRY = {
     "sp_fp" : saddlept_fp,
     "sp_fp_new" : saddlept_fp_new,
     "nonlin_cg" : nonlin_cg,
+    "nonlin_p" : nonlin_p,
     "bfp_n" : bfp_n,
     "bfp_fp" : bfp_fp,
 }

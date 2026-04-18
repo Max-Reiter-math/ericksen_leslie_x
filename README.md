@@ -53,6 +53,7 @@ $$
 
 Currently the following numerical schemes are available (key : explanation).
 - nonlin_cg : Numerical Method in [[1]](#1). Implemented using a monolithic Newton solver.
+- nonlin_p : Penalization Method based on Algorithm 3.1. in [[4]](#4). Implemented using a monolithic Newton solver.
 - linear_cg : Algorithm 1 in [[3]](#3). Linear projection method.
 - linear_cg_bdf2 : BDF2 discretization of the above method.
 - linear_dg : Algorithm 2 in [[3]](#3). Linear projection method based on the DG method.
