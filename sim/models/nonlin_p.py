@@ -251,8 +251,6 @@ def variational_form(dxL, v1, p1, d1, q1, v0, p0, d0, q0, a, h, b, c, dt, normal
         """
         
 
-        d_ = 0.5*d1 + 0.5*d0
-
         # SECTION MOMENTUM EQUATION
         a_11 = inner( v1 , a )*dx # discrete time derivative
 
@@ -266,11 +264,11 @@ def variational_form(dxL, v1, p1, d1, q1, v0, p0, d0, q0, a, h, b, c, dt, normal
 
         coeff1 = args.mu1 + (args.lam)**2 /args.gamma
         if coeff1 != 0.0:
-            a_11 += dt * coeff1*inner(d_,dot(grad_sym(v1),d_))*inner(d_,dot(grad_sym(a),d_))*dx
+            a_11 += dt * coeff1*inner(d0,dot(grad_sym(v1),d0))*inner(d0,dot(grad_sym(a),d0))*dx
 
         coeff2 = args.mu5 + args.mu6 - (args.lam)**2 /args.gamma
         if coeff2 != 0.0:
-            a_11 += dt * coeff2 *inner( dot(grad_sym(v1),d_), dot(grad_sym(a),d_))*dx
+            a_11 += dt * coeff2 *inner( dot(grad_sym(v1),d0), dot(grad_sym(a),d0))*dx
 
         # Reformulated pressure term
         a_12 = (-1)*inner(p1, div(a)) * dx 
@@ -286,9 +284,9 @@ def variational_form(dxL, v1, p1, d1, q1, v0, p0, d0, q0, a, h, b, c, dt, normal
 
         # Leslie stress tensor
         if args.beta != 0.0:
-            a_14 += dt* args.beta *inner(dot(grad_skw(a),d_), q1)*dx
+            a_14 += dt* args.beta *inner(dot(grad_skw(a),d0), q1)*dx
         if args.lam != 0.0:
-            a_14 -= dt* args.lam *inner(dot(grad_sym(a),d_), q1)*dx
+            a_14 -= dt* args.lam *inner(dot(grad_sym(a),d0), q1)*dx
 
         L_1 = inner(v0, a )*dx
 
@@ -309,9 +307,9 @@ def variational_form(dxL, v1, p1, d1, q1, v0, p0, d0, q0, a, h, b, c, dt, normal
 
         # Leslie stress tensor
         if args.beta != 0.0:
-            a_31 -= dt* args.beta *inner(dot(grad_skw(v1),d_), c)*dx
+            a_31 -= dt* args.beta *inner(dot(grad_skw(v1),d0), c)*dx
         if args.lam != 0.0:
-            a_31 += dt* args.lam *inner(dot(grad_sym(v1),d_), c)*dx
+            a_31 += dt* args.lam *inner(dot(grad_sym(v1),d0), c)*dx
 
         if args.gamma != 0.0:
             a_34 = dt* args.gamma *inner(q1, c)*dx
